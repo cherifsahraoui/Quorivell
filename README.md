@@ -65,6 +65,13 @@ later opt into an explicit remote flow.
 
 Closed testing may take a short while to show the install button after you join.
 
+### Sideload APK (GitHub Releases)
+
+Prefer Play for installs and updates. For a direct APK (testing / no Play
+access), use the latest asset on
+[GitHub Releases](https://github.com/cherifsahraoui/Quorivell/releases).
+That build will not update an app installed from Play (different signing key).
+
 ---
 
 ## ☕ Support the project
@@ -78,7 +85,7 @@ If Quorivell helps you keep decisions straight, you can
 
 ## ✨ Capabilities
 
-| | |
+| Capability | Description |
 | --- | --- |
 | **Capture** | Save conversation text as source records |
 | **Extract** | On-device candidates from a configurable kind catalog |
