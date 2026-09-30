@@ -10,6 +10,30 @@
   <a href="https://play.google.com/store/apps/details?id=com.quorivell.app"><img src="docs/assets/badge-play-store.png" alt="Play Store"></a>
 </p>
 
+<p align="center">
+  <a href="https://sonarcloud.io/summary/new_code?id=cherifsahraoui_Quorivell"><img src="https://sonarcloud.io/api/project_badges/measure?project=cherifsahraoui_Quorivell&metric=alert_status" alt="Quality Gate"></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=cherifsahraoui_Quorivell"><img src="https://sonarcloud.io/api/project_badges/measure?project=cherifsahraoui_Quorivell&metric=bugs" alt="Bugs"></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=cherifsahraoui_Quorivell"><img src="https://sonarcloud.io/api/project_badges/measure?project=cherifsahraoui_Quorivell&metric=reliability_rating" alt="Reliability Rating"></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=cherifsahraoui_Quorivell"><img src="https://sonarcloud.io/api/project_badges/measure?project=cherifsahraoui_Quorivell&metric=security_rating" alt="Security Rating"></a>
+  <a href="https://sonarcloud.io/summary/new_code?id=cherifsahraoui_Quorivell"><img src="https://sonarcloud.io/api/project_badges/measure?project=cherifsahraoui_Quorivell&metric=sqale_rating" alt="Maintainability Rating"></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/cherifsahraoui/Quorivell/commits/main"><img src="https://img.shields.io/github/last-commit/cherifsahraoui/Quorivell" alt="last commit"></a>
+  <a href="https://github.com/cherifsahraoui/Quorivell/graphs/commit-activity"><img src="https://img.shields.io/github/commit-activity/m/cherifsahraoui/Quorivell?color=yellow&style=flat" alt="commits per month"></a>
+  <img src="https://img.shields.io/github/languages/top/cherifsahraoui/Quorivell" alt="top language">
+  <img src="https://img.shields.io/github/languages/code-size/cherifsahraoui/Quorivell?color=yellow" alt="code size">
+  <img src="https://img.shields.io/github/repo-size/cherifsahraoui/Quorivell?color=violet" alt="repo size">
+</p>
+
+<p align="center">
+  <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-%3E%3D3.35.7-02569B.svg?logo=flutter" alt="Flutter"></a>
+  <a href="https://dart.dev"><img src="https://img.shields.io/badge/Dart-%3E%3D3.10-0175C2.svg?logo=dart" alt="Dart"></a>
+  <a href="docs/architecture.md"><img src="https://img.shields.io/badge/UI-Material%203-6750A4.svg" alt="Material 3"></a>
+  <a href="docs/architecture.md"><img src="https://img.shields.io/badge/privacy-local--first-2E7D32.svg" alt="local-first"></a>
+  <a href="https://github.com/cherifsahraoui/Quorivell/issues"><img src="https://img.shields.io/badge/PRs-welcome-orange.svg?style=flat" alt="PRs welcome"></a>
+</p>
+
 <p align="center"><strong>Decisions, with evidence — on your device.</strong></p>
 
 **Quorivell** is a local-first Flutter app that turns messy conversations into
