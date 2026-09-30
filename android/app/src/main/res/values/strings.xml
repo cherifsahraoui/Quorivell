@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Quorivell</string>
+    <string name="data_sync_progress_channel_name">On-device work in progress</string>
+    <string name="data_sync_progress_channel_description">Shows while extraction, chat, model download, or local model copy runs</string>
+    <string name="data_sync_complete_channel_name">On-device work complete</string>
+    <string name="data_sync_complete_channel_description">Notifies when local extraction, a chat reply, or model install finishes</string>
+    <string name="model_install_download_title">Downloading model</string>
+    <string name="model_install_download_body">Downloading the on-device model. You can switch apps.</string>
+    <string name="model_install_progress_percent">%d%%</string>
+    <string name="model_install_progress_stats">%1$d%% · %2$s · %3$s</string>
+    <string name="model_install_speed_mbps">%s MB/s</string>
+    <string name="model_install_speed_kbps">%s KB/s</string>
+    <string name="model_install_speed_bps">%d B/s</string>
+    <string name="model_install_time_left_hours">~%d h left</string>
+    <string name="model_install_time_left_minutes">~%d min left</string>
+    <string name="model_install_time_left_seconds">~%d s left</string>
+    <string name="model_install_finalizing_body">Finalizing the model…</string>
+    <string name="model_install_copy_title">Copying model</string>
+    <string name="model_install_copy_body">Copying the selected GGUF onto this device.</string>
+    <string name="model_install_export_title">Saving model</string>
+    <string name="model_install_export_body">Saving a copy of the on-device model.</string>
+    <string name="extraction_in_progress_title">Extraction in progress</string>
+    <string name="extraction_in_progress_body">Processing conversation text with local AI model</string>
+    <string name="share_target_label">Capture in Quorivell</string>
+    <string name="process_text_label">Summarize with Quorivell</string>
+</resources>

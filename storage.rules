@@ -1,0 +1,29 @@
+rules_version = '2';
+
+// ===============================================================
+// Quorivell — Cloud Storage Security Rules
+// ===============================================================
+//
+// Quorivell has no Cloud Storage feature. The app does not depend on
+// firebase_storage and never reads or writes an object.
+//
+// Stance: total deny, for every bucket and every path, authenticated or not.
+// Conversation audio, transcripts, exports, and model artifacts are exactly
+// the kind of private content that must not become reachable by accident, so
+// the default here is "nothing exists" rather than "the owner's folder is
+// open just in case".
+//
+// When a real Storage feature ships it must add an explicit, UID-scoped,
+// content-type- and size-limited match block (for example
+// `match /users/{userId}/{allPaths=**}` guarded by
+// `request.auth.uid == userId`), together with emulator tests, before this
+// deny-all is relaxed. Do not widen this file speculatively.
+// ===============================================================
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

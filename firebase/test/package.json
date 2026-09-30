@@ -1,0 +1,15 @@
+{
+  "name": "quorivell-rules-tests",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Emulator-based Firebase Security Rules tests for Quorivell. Isolated from the Flutter build on purpose.",
+  "scripts": {
+    "test": "npx -y firebase-tools@latest emulators:exec --project demo-quorivell-rules --only auth,firestore,storage \"node --test\"",
+    "test:no-emulator": "node --test"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.0",
+    "firebase": "^12.6.0"
+  }
+}

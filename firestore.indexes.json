@@ -1,0 +1,50 @@
+{
+    "indexes": [],
+    "fieldOverrides": [
+        {
+            "collectionGroup": "source_conversations",
+            "fieldPath": "content",
+            "indexes": []
+        },
+        {
+            "collectionGroup": "evidence",
+            "fieldPath": "quoteSnippet",
+            "indexes": []
+        },
+        {
+            "collectionGroup": "extraction_candidates",
+            "fieldPath": "quoteSnippet",
+            "indexes": []
+        },
+        {
+            "collectionGroup": "chat_messages",
+            "fieldPath": "content",
+            "indexes": []
+        },
+        {
+            "collectionGroup": "user_preferences",
+            "fieldPath": "chatSystemPromptOverride",
+            "indexes": []
+        },
+        {
+            "collectionGroup": "user_preferences",
+            "fieldPath": "extractionPromptOverride",
+            "indexes": []
+        },
+        {
+            "collectionGroup": "user_preferences",
+            "fieldPath": "extractionSystemPromptOverride",
+            "indexes": []
+        },
+        {
+            "collectionGroup": "extraction_item_kinds",
+            "fieldPath": "extractionHint",
+            "indexes": []
+        },
+        {
+            "collectionGroup": "extraction_item_kinds",
+            "fieldPath": "teachingExamplesJson",
+            "indexes": []
+        }
+    ]
+}

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Quorivell</string>
+    <string name="data_sync_progress_channel_name">Lokale Arbeit läuft</string>
+    <string name="data_sync_progress_channel_description">Wird angezeigt, während Extraktion, Chat, Modell-Download oder lokales Kopieren laufen</string>
+    <string name="data_sync_complete_channel_name">Lokale Arbeit abgeschlossen</string>
+    <string name="data_sync_complete_channel_description">Benachrichtigt, wenn lokale Extraktion, eine Chat-Antwort oder die Modellinstallation fertig ist</string>
+    <string name="model_install_download_title">Modell wird heruntergeladen</string>
+    <string name="model_install_download_body">Das On-Device-Modell wird heruntergeladen. Du kannst die App wechseln.</string>
+    <string name="model_install_progress_percent">%d %%</string>
+    <string name="model_install_progress_stats">%1$d %% · %2$s · %3$s</string>
+    <string name="model_install_speed_mbps">%s MB/s</string>
+    <string name="model_install_speed_kbps">%s KB/s</string>
+    <string name="model_install_speed_bps">%d B/s</string>
+    <string name="model_install_time_left_hours">noch ca. %d Std.</string>
+    <string name="model_install_time_left_minutes">noch ca. %d Min.</string>
+    <string name="model_install_time_left_seconds">noch ca. %d Sek.</string>
+    <string name="model_install_finalizing_body">Modell wird abgeschlossen…</string>
+    <string name="model_install_copy_title">Modell wird kopiert</string>
+    <string name="model_install_copy_body">Die gewählte GGUF wird auf dieses Gerät kopiert.</string>
+    <string name="model_install_export_title">Modell wird gespeichert</string>
+    <string name="model_install_export_body">Eine Kopie des Modells auf dem Gerät wird gespeichert.</string>
+    <string name="extraction_in_progress_title">Extraktion läuft</string>
+    <string name="extraction_in_progress_body">Gesprächstext wird mit lokalem KI-Modell verarbeitet</string>
+    <string name="share_target_label">In Quorivell erfassen</string>
+    <string name="process_text_label">Mit Quorivell zusammenfassen</string>
+</resources>

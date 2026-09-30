@@ -1,0 +1,11 @@
+# Copy to android/key.properties (gitignored) and fill in real values.
+# Never commit key.properties, *.jks, *.keystore, or upload_certificate.pem.
+#
+# Flutter: https://docs.flutter.dev/deployment/android#signing-the-app
+# Play services SHA-1: https://developers.google.com/android/guides/client-auth
+
+storePassword=REPLACE_WITH_STORE_PASSWORD
+keyPassword=REPLACE_WITH_KEY_PASSWORD
+keyAlias=upload
+# Path is relative to android/app/ (this module). Prefer ../upload-keystore.jks.
+storeFile=../upload-keystore.jks

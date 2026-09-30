@@ -1,0 +1,707 @@
+rules_version = '2';
+
+// ===============================================================
+// Quorivell — Firestore Security Rules
+// ===============================================================
+//
+// Quorivell is local-first: Drift/SQLite is the canonical store and no
+// Firestore sync path exists in the app yet. These rules describe the
+// contract that a future sync must satisfy, and they are deliberately
+// tighter than that future feature will strictly need. A rule that is too
+// tight fails loudly during development; a rule that is too loose leaks
+// private conversation content.
+//
+// Anything not matched below is denied by the terminal catch-all.
+//
+// ---------------------------------------------------------------
+// Assumed data model (mirrors lib/core/database/app_database.dart and
+// lib/features/*/domain/entities/*.dart)
+// ---------------------------------------------------------------
+//
+// Local-only fields that must NEVER be uploaded, and are therefore rejected
+// as unknown fields everywhere below:
+//   - syncStatus (local sync bookkeeping)
+//   - id         (carried by the document path, not the document body)
+//
+// Collection: users/{userId}
+//   Document ID: Firebase Auth UID
+//   No synced profile document exists. Reads and writes are denied outright;
+//   the UID-scoped subcollections below are the only sync surface.
+//
+// Collection: users/{userId}/source_conversations/{conversationId}
+//   Raw captured conversation text. The most privacy-sensitive collection.
+//   Fields:
+//     - userId: string (required, == {userId} == request.auth.uid, immutable)
+//     - content: string (required, 1..20000) - raw captured text
+//     - sourceRevision: int (required, >= 1, non-decreasing on update)
+//     - createdAt: timestamp (required, immutable)
+//     - updatedAt: timestamp (required, >= createdAt, not in the future)
+//     - isDeleted: bool (required) - soft-delete tombstone
+//     - isArchived: bool (required) - extracted/history conversations
+//
+// Collection: users/{userId}/ledger_items/{ledgerItemId}
+//   Accepted ledger items (built-in Decision/Commitment plus user kinds).
+//   Fields:
+//     - userId: string (required, == {userId} == request.auth.uid, immutable)
+//     - kind: string (required, slug ^[a-z][a-z0-9_]{0,31}$, immutable)
+//     - statement: string (required, 1..2000)
+//     - status: string (required, 'open' | 'completed' | 'cancelled')
+//     - owner: string | null (optional, 1..200)
+//     - dueDate: timestamp | null (optional; app enforces datePolicy)
+//     - note: string | null (optional, 1..2000; user-authored)
+//     - kindDisplayNameSnapshot: string (required, 1..80)
+//     - createdAt: timestamp (required, immutable)
+//     - updatedAt: timestamp (required, >= createdAt, not in the future)
+//     - isDeleted: bool (required)
+//
+// Collection: users/{userId}/ledger_items/{ledgerItemId}/evidence/{evidenceId}
+//   Quote anchors proving why a ledger item exists. Ownership comes from the
+//   path; the row has no userId column of its own.
+//   Fields:
+//     - ledgerItemId: string (required, == {ledgerItemId}, immutable)
+//     - sourceConversationId: string (required, 1..128, immutable)
+//     - sourceRevision: int (required, >= 1, immutable)
+//     - quoteStart: int (required, >= 0, immutable)
+//     - quoteEnd: int (required, > quoteStart, span <= 2000, immutable)
+//     - quoteSnippet: string (required, 1..2000, immutable)
+//     - createdAt: timestamp (required, immutable)
+//     - updatedAt: timestamp (required, >= createdAt, not in the future)
+//     - isDeleted: bool (required)
+//
+// Collection: users/{userId}/chat_threads/{threadId}
+//   On-device AI chat sessions (local canonical; future UID-scoped mirror).
+//   Fields:
+//     - userId: string (required, == {userId} == request.auth.uid, immutable)
+//     - title: string (required, 1..200)
+//     - modelId: string | null (optional, 1..128)
+//     - createdAt: timestamp (required, immutable)
+//     - updatedAt: timestamp (required, >= createdAt, not in the future)
+//     - isDeleted: bool (required)
+//
+// Collection: users/{userId}/chat_threads/{threadId}/chat_messages/{messageId}
+//   Individual turns in a chat thread.
+//   Fields:
+//     - userId: string (required, == {userId} == request.auth.uid, immutable)
+//     - threadId: string (required, == {threadId}, immutable)
+//     - role: string (required, 'user' | 'assistant', immutable)
+//     - content: string (required, 1..20000)
+//     - status: string (required, 'complete' | 'error')
+//     - createdAt: timestamp (required, immutable)
+//     - updatedAt: timestamp (required, >= createdAt, not in the future)
+//     - isDeleted: bool (required)
+//
+// Collection: users/{userId}/extraction_candidates/{candidateId}
+//   Reviewable extraction output (ReviewCandidate).
+//   Fields:
+//     - userId: string (required, == {userId} == request.auth.uid, immutable)
+//     - sourceConversationId: string (required, 1..128, immutable)
+//     - sourceRevision: int (required, >= 1, immutable)
+//     - kind: string (required, slug, immutable)
+//     - statement: string (required, 1..2000)
+//     - owner: string | null (optional, 1..200)
+//     - dueDate: timestamp | null (optional; app enforces datePolicy)
+//     - note: string | null (optional, 1..2000; user-authored at review)
+//     - quoteStart: int (required, >= 0, immutable)
+//     - quoteEnd: int (required, > quoteStart, span <= 2000, immutable)
+//     - quoteSnippet: string (required, 1..2000, immutable)
+//     - reviewStatus: string (required, 'pending' | 'accepted' | 'rejected'
+//       | 'deferred'; 'accepted' and 'rejected' are terminal on update)
+//     - createdAt: timestamp (required, immutable)
+//     - updatedAt: timestamp (required, >= createdAt, not in the future)
+//     - isDeleted: bool (required)
+//
+// Collection: users/{userId}/user_preferences/{preferenceId}
+//   Account-level appearance, locale, and optional debug AI settings.
+//   Local canonical row id is `app`.
+//   Fields:
+//     - userId: string (required, == {userId} == request.auth.uid, immutable)
+//     - themeMode: string (required, 'system' | 'light' | 'dark')
+//     - localePreference: string (required, 'system' | 'en' | 'de' | 'ar')
+//     - debugModeEnabled: bool (required)
+//     - chatSystemPromptOverride: string | null (optional, 1..20000)
+//     - extractionPromptOverride: string | null (optional, 1..20000)
+//     - extractionSystemPromptOverride: string | null (optional, 1..20000)
+//     - extractionKindsIntroDismissed: bool (required)
+//     - createdAt: timestamp (required, immutable)
+//     - updatedAt: timestamp (required, >= createdAt, not in the future)
+//     - isDeleted: bool (required)
+//
+// Collection: users/{userId}/extraction_item_kinds/{kindId}
+//   User extraction kind catalog (built-in Decision/Commitment plus custom).
+//   Fields:
+//     - userId: string (required, == {userId}, immutable)
+//     - slug: string (required, slug charset, immutable)
+//     - displayName: string (required, 1..80)
+//     - extractionHint: string | null (optional, 1..400)
+//     - behavior: string (required, 'record' | 'completable')
+//     - datePolicy / notePolicy / ownerPolicy: 'none' | 'optional'
+//     - enabledForExtraction: bool (required)
+//     - isBuiltIn: bool (required, immutable)
+//     - sortOrder: int (required, 0..1000)
+//     - teachingExamplesJson: string | null (optional, 1..4000)
+//     - createdAt: timestamp (required, immutable)
+//     - updatedAt: timestamp (required, >= createdAt, not in the future)
+//     - isDeleted: bool (required)
+//
+// Collection: users/{userId}/ai_processing_consents/{consentId}
+//   Explicit remote-AI processing consent. Local canonical row id is
+//   `ai_processing_consent`. On-device extraction does not read this.
+//   Fields:
+//     - userId: string (required, == {userId} == request.auth.uid, immutable)
+//     - status: string (required, 'unknown' | 'granted' | 'declined')
+//     - createdAt: timestamp (required, immutable)
+//     - updatedAt: timestamp (required, >= createdAt, not in the future)
+//     - isDeleted: bool (required)
+//
+// Collection: users/{userId}/extraction_runs/{runId}
+//   Completed extraction run history (privacy-safe aggregates only).
+//   Fields:
+//     - userId: string (required, == {userId} == request.auth.uid, immutable)
+//     - sourceConversationId: string | null (optional, 1..128; never raw content)
+//     - sourceConversationTitle: string | null (optional, 1..200)
+//     - modelId: string (required, 1..128)
+//     - modelDisplayName: string | null (optional, 1..200)
+//     - startedAt: timestamp (required, immutable)
+//     - completedAt: timestamp (required, >= startedAt, not in the future)
+//     - status: string (required, 'success' | 'failure', immutable)
+//     - durationMs: int (required, >= 0, <= 86400000 [24 hours], immutable)
+//     - enabledKindSlugsJson: string (required, 1..500, immutable)
+//     - kindCountsJson: string (required, 1..2000, immutable)
+//     - acceptedCount: int (required, >= 0, <= 10000, immutable)
+//     - rejectedCount: int (required, >= 0, <= 10000, immutable)
+//     - pendingCount: int (required, >= 0, <= 10000, immutable)
+//     - createdAt: timestamp (required, immutable)
+//     - updatedAt: timestamp (required, >= createdAt, not in the future)
+//     - isDeleted: bool (required)
+//
+// ---------------------------------------------------------------
+// Deliberately NOT granted
+// ---------------------------------------------------------------
+//   - No collection-group read is allowed. Collection-group queries would
+//     escape the users/{userId} prefix, so they are denied until a rule with
+//     an explicit resource.data.userId == request.auth.uid check is added.
+//   - No server/Function-owned area is writable by clients. Any future
+//     entitlement, quota, aggregate, or AI-usage document must live outside
+//     these paths and stay covered by the catch-all deny so only the Admin
+//     SDK can write it.
+//   - Anonymous sign-in is rejected. The app only uses email/password today;
+//     a future anonymous mode must relax this consciously.
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------------------------------------------------------
+    // Identity helpers
+    // ---------------------------------------------------------------
+
+    // Signed in with a real, non-anonymous account.
+    // Stricter than necessary on purpose: private conversation content should
+    // never be reachable from a throwaway anonymous session.
+    function isSignedIn() {
+      return request.auth != null
+        && request.auth.uid is string
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // The document body must agree with the path and with the caller. This
+    // keeps ownership authority in the auth token, not in client-sent data.
+    function bodyIsOwnedBy(data, userId) {
+      return data.userId is string
+        && data.userId == userId
+        && data.userId == request.auth.uid;
+    }
+
+    // ---------------------------------------------------------------
+    // Shape helpers
+    // ---------------------------------------------------------------
+
+    // Exactly the allowed keys, and at least the required ones.
+    function hasExactShape(data, allowed, required) {
+      return data.keys().hasOnly(allowed) && data.keys().hasAll(required);
+    }
+
+    function isBoundedString(value, minLen, maxLen) {
+      return value is string && value.size() >= minLen && value.size() <= maxLen;
+    }
+
+    // Nullable string: absent, explicit null, or a bounded non-empty string.
+    function isOptionalBoundedString(data, field, maxLen) {
+      return !(field in data)
+        || data[field] == null
+        || isBoundedString(data[field], 1, maxLen);
+    }
+
+    function isOptionalTimestamp(data, field) {
+      return !(field in data)
+        || data[field] == null
+        || data[field] is timestamp;
+    }
+
+    // Local-first devices may sync stale records, so past timestamps are
+    // fine, but future-dated writes are rejected (5 minutes of clock skew
+    // allowance) so createdAt/updatedAt cannot be used to game ordering.
+    function hasSaneTimestamps(data) {
+      return data.createdAt is timestamp
+        && data.updatedAt is timestamp
+        && data.createdAt <= data.updatedAt
+        && data.updatedAt <= request.time + duration.value(5, 'm');
+    }
+
+    function isTombstoneFlag(data) {
+      return data.isDeleted is bool;
+    }
+
+    function areFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    // Quote anchors must describe a real, bounded span of the source text.
+    function isValidQuoteAnchor(data) {
+      return data.sourceConversationId is string
+        && isBoundedString(data.sourceConversationId, 1, 128)
+        && data.sourceRevision is int
+        && data.sourceRevision >= 1
+        && data.quoteStart is int
+        && data.quoteStart >= 0
+        && data.quoteEnd is int
+        && data.quoteEnd > data.quoteStart
+        && data.quoteEnd - data.quoteStart <= 2000
+        && isBoundedString(data.quoteSnippet, 1, 2000);
+    }
+
+    // Catalog slugs: lowercase letter, then up to 31 letters/digits/underscores.
+    function isKindSlug(value) {
+      return value is string
+        && value.size() >= 1
+        && value.size() <= 32
+        && value.matches('^[a-z][a-z0-9_]{0,31}$');
+    }
+
+    function isKindBehavior(value) {
+      return value in ['record', 'completable'];
+    }
+
+    function isKindFieldPolicy(value) {
+      return value in ['none', 'optional'];
+    }
+
+    // ---------------------------------------------------------------
+    // users/{userId}
+    // ---------------------------------------------------------------
+    // No profile document is synced today, so the user document itself is
+    // fully denied. Only the subcollections below are reachable.
+    match /users/{userId} {
+      allow read, write: if false;
+    }
+
+    // ---------------------------------------------------------------
+    // users/{userId}/source_conversations/{conversationId}
+    // ---------------------------------------------------------------
+
+    function isValidSourceConversation(data, userId) {
+      return hasExactShape(
+          data,
+          ['userId', 'content', 'sourceRevision', 'createdAt', 'updatedAt', 'isDeleted', 'isArchived'],
+          ['userId', 'content', 'sourceRevision', 'createdAt', 'updatedAt', 'isDeleted', 'isArchived']
+        )
+        && bodyIsOwnedBy(data, userId)
+        // 20000 chars is intentionally well under the 1 MiB document limit:
+        // long transcripts belong on-device, and an unbounded string field is
+        // a resource-exhaustion vector.
+        && isBoundedString(data.content, 1, 20000)
+        && data.sourceRevision is int
+        && data.sourceRevision >= 1
+        && isTombstoneFlag(data)
+        && data.isArchived is bool
+        && hasSaneTimestamps(data);
+    }
+
+    match /users/{userId}/source_conversations/{conversationId} {
+      allow read: if isOwner(userId);
+
+      allow create: if isOwner(userId)
+        && isValidSourceConversation(request.resource.data, userId);
+
+      allow update: if isOwner(userId)
+        && isValidSourceConversation(request.resource.data, userId)
+        && areFieldsUnchanged(['userId', 'createdAt'])
+        // Revisions only move forward, so evidence anchored to an older
+        // revision cannot be silently invalidated by rewriting history.
+        && request.resource.data.sourceRevision >= resource.data.sourceRevision;
+
+      allow delete: if isOwner(userId);
+    }
+
+    // ---------------------------------------------------------------
+    // users/{userId}/ledger_items/{ledgerItemId}
+    // ---------------------------------------------------------------
+
+    function isValidLedgerItem(data, userId) {
+      return hasExactShape(
+          data,
+          ['userId', 'kind', 'statement', 'status', 'owner', 'dueDate', 'note', 'kindDisplayNameSnapshot', 'createdAt', 'updatedAt', 'isDeleted'],
+          ['userId', 'kind', 'statement', 'status', 'kindDisplayNameSnapshot', 'createdAt', 'updatedAt', 'isDeleted']
+        )
+        && bodyIsOwnedBy(data, userId)
+        && isKindSlug(data.kind)
+        && isBoundedString(data.statement, 1, 2000)
+        && data.status in ['open', 'completed', 'cancelled']
+        && isOptionalBoundedString(data, 'owner', 200)
+        && isOptionalTimestamp(data, 'dueDate')
+        && isOptionalBoundedString(data, 'note', 2000)
+        && isBoundedString(data.kindDisplayNameSnapshot, 1, 80)
+        && isTombstoneFlag(data)
+        && hasSaneTimestamps(data);
+    }
+
+    // Every status change has to pass through 'open'. Flipping a completed
+    // item straight to cancelled (or back) would rewrite the outcome of a
+    // decision without an intermediate reopen, which is exactly the kind of
+    // silent history edit the ledger is meant to prevent.
+    function isValidLedgerStatusTransition() {
+      return request.resource.data.status == resource.data.status
+        || request.resource.data.status == 'open'
+        || resource.data.status == 'open';
+    }
+
+    match /users/{userId}/ledger_items/{ledgerItemId} {
+      allow read: if isOwner(userId);
+
+      allow create: if isOwner(userId)
+        && isValidLedgerItem(request.resource.data, userId);
+
+      allow update: if isOwner(userId)
+        && isValidLedgerItem(request.resource.data, userId)
+        // 'kind' is fixed at acceptance time: a decision cannot become a
+        // commitment after the fact.
+        && areFieldsUnchanged(['userId', 'kind', 'createdAt'])
+        && isValidLedgerStatusTransition();
+
+      allow delete: if isOwner(userId);
+    }
+
+    // ---------------------------------------------------------------
+    // users/{userId}/ledger_items/{ledgerItemId}/evidence/{evidenceId}
+    // ---------------------------------------------------------------
+
+    function isValidEvidence(data, ledgerItemId) {
+      return hasExactShape(
+          data,
+          ['ledgerItemId', 'sourceConversationId', 'sourceRevision', 'quoteStart', 'quoteEnd', 'quoteSnippet', 'createdAt', 'updatedAt', 'isDeleted'],
+          ['ledgerItemId', 'sourceConversationId', 'sourceRevision', 'quoteStart', 'quoteEnd', 'quoteSnippet', 'createdAt', 'updatedAt', 'isDeleted']
+        )
+        // The reference cannot point at a different ledger item than the one
+        // it is nested under.
+        && data.ledgerItemId == ledgerItemId
+        && isValidQuoteAnchor(data)
+        && isTombstoneFlag(data)
+        && hasSaneTimestamps(data);
+    }
+
+    match /users/{userId}/ledger_items/{ledgerItemId}/evidence/{evidenceId} {
+      allow read: if isOwner(userId);
+
+      allow create: if isOwner(userId)
+        && isValidEvidence(request.resource.data, ledgerItemId);
+
+      // Evidence is an audit trail: the quote anchor itself is write-once.
+      // Only the tombstone flag and updatedAt may move, so a user can erase
+      // evidence (delete below) but never quietly re-point it at a different
+      // quote after a decision has been accepted.
+      allow update: if isOwner(userId)
+        && isValidEvidence(request.resource.data, ledgerItemId)
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['isDeleted', 'updatedAt']);
+
+      allow delete: if isOwner(userId);
+    }
+
+    // ---------------------------------------------------------------
+    // users/{userId}/extraction_candidates/{candidateId}
+    // ---------------------------------------------------------------
+
+    function isValidExtractionCandidate(data, userId) {
+      return hasExactShape(
+          data,
+          ['userId', 'sourceConversationId', 'sourceRevision', 'kind', 'statement', 'owner', 'dueDate', 'note', 'quoteStart', 'quoteEnd', 'quoteSnippet', 'reviewStatus', 'createdAt', 'updatedAt', 'isDeleted'],
+          ['userId', 'sourceConversationId', 'sourceRevision', 'kind', 'statement', 'quoteStart', 'quoteEnd', 'quoteSnippet', 'reviewStatus', 'createdAt', 'updatedAt', 'isDeleted']
+        )
+        && bodyIsOwnedBy(data, userId)
+        && isKindSlug(data.kind)
+        && isBoundedString(data.statement, 1, 2000)
+        && isOptionalBoundedString(data, 'owner', 200)
+        && isOptionalTimestamp(data, 'dueDate')
+        && isOptionalBoundedString(data, 'note', 2000)
+        && isValidQuoteAnchor(data)
+        && data.reviewStatus in ['pending', 'accepted', 'rejected', 'deferred']
+        && isTombstoneFlag(data)
+        && hasSaneTimestamps(data);
+    }
+
+    // 'accepted' and 'rejected' are terminal: a ledger item may already cite
+    // the candidate, so the whole record freezes except for the tombstone. A
+    // change of mind must produce a new candidate instead of rewriting this
+    // one. Create still accepts any review status, because a local-first
+    // device may sync a candidate it already reviewed while offline.
+    function isTerminalReviewRespected() {
+      return !(resource.data.reviewStatus in ['accepted', 'rejected'])
+        || request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['isDeleted', 'updatedAt']);
+    }
+
+    match /users/{userId}/extraction_candidates/{candidateId} {
+      allow read: if isOwner(userId);
+
+      allow create: if isOwner(userId)
+        && isValidExtractionCandidate(request.resource.data, userId);
+
+      allow update: if isOwner(userId)
+        && isValidExtractionCandidate(request.resource.data, userId)
+        // Provenance (which conversation, which revision, which quote, which
+        // kind) is write-once. Only the reviewable fields may change.
+        && areFieldsUnchanged([
+             'userId',
+             'createdAt',
+             'sourceConversationId',
+             'sourceRevision',
+             'kind',
+             'quoteStart',
+             'quoteEnd',
+             'quoteSnippet'
+           ])
+        && isTerminalReviewRespected();
+
+      allow delete: if isOwner(userId);
+    }
+
+    // ---------------------------------------------------------------
+    // users/{userId}/chat_threads/{threadId}
+    // ---------------------------------------------------------------
+
+    function isValidChatThread(data, userId) {
+      return hasExactShape(
+          data,
+          ['userId', 'title', 'modelId', 'createdAt', 'updatedAt', 'isDeleted'],
+          ['userId', 'title', 'createdAt', 'updatedAt', 'isDeleted']
+        )
+        && bodyIsOwnedBy(data, userId)
+        && isBoundedString(data.title, 1, 200)
+        && isOptionalBoundedString(data, 'modelId', 128)
+        && isTombstoneFlag(data)
+        && hasSaneTimestamps(data);
+    }
+
+    match /users/{userId}/chat_threads/{threadId} {
+      allow read: if isOwner(userId);
+
+      allow create: if isOwner(userId)
+        && isValidChatThread(request.resource.data, userId);
+
+      allow update: if isOwner(userId)
+        && isValidChatThread(request.resource.data, userId)
+        && areFieldsUnchanged(['userId', 'createdAt']);
+
+      allow delete: if isOwner(userId);
+
+      function isValidChatMessage(data, userId, threadId) {
+        return hasExactShape(
+            data,
+            ['userId', 'threadId', 'role', 'content', 'status', 'createdAt', 'updatedAt', 'isDeleted'],
+            ['userId', 'threadId', 'role', 'content', 'status', 'createdAt', 'updatedAt', 'isDeleted']
+          )
+          && bodyIsOwnedBy(data, userId)
+          && data.threadId == threadId
+          && data.role in ['user', 'assistant']
+          && isBoundedString(data.content, 1, 20000)
+          && data.status in ['complete', 'error']
+          && isTombstoneFlag(data)
+          && hasSaneTimestamps(data);
+      }
+
+      match /chat_messages/{messageId} {
+        allow read: if isOwner(userId);
+
+        allow create: if isOwner(userId)
+          && isValidChatMessage(request.resource.data, userId, threadId);
+
+        allow update: if isOwner(userId)
+          && isValidChatMessage(request.resource.data, userId, threadId)
+          && areFieldsUnchanged(['userId', 'threadId', 'role', 'createdAt']);
+
+        allow delete: if isOwner(userId);
+      }
+    }
+
+    // ---------------------------------------------------------------
+    // users/{userId}/user_preferences/{preferenceId}
+    // ---------------------------------------------------------------
+
+    function isValidUserPreference(data, userId) {
+      return hasExactShape(
+          data,
+          ['userId', 'themeMode', 'localePreference', 'debugModeEnabled', 'chatSystemPromptOverride', 'extractionPromptOverride', 'extractionSystemPromptOverride', 'extractionKindsIntroDismissed', 'createdAt', 'updatedAt', 'isDeleted'],
+          ['userId', 'themeMode', 'localePreference', 'debugModeEnabled', 'extractionKindsIntroDismissed', 'createdAt', 'updatedAt', 'isDeleted']
+        )
+        && bodyIsOwnedBy(data, userId)
+        && data.themeMode in ['system', 'light', 'dark']
+        && data.localePreference in ['system', 'en', 'de', 'ar']
+        && data.debugModeEnabled is bool
+        && data.extractionKindsIntroDismissed is bool
+        && isOptionalBoundedString(data, 'chatSystemPromptOverride', 20000)
+        && isOptionalBoundedString(data, 'extractionPromptOverride', 20000)
+        && isOptionalBoundedString(data, 'extractionSystemPromptOverride', 20000)
+        && isTombstoneFlag(data)
+        && hasSaneTimestamps(data);
+    }
+
+    match /users/{userId}/user_preferences/{preferenceId} {
+      allow read: if isOwner(userId);
+
+      allow create: if isOwner(userId)
+        && isValidUserPreference(request.resource.data, userId);
+
+      allow update: if isOwner(userId)
+        && isValidUserPreference(request.resource.data, userId)
+        && areFieldsUnchanged(['userId', 'createdAt']);
+
+      allow delete: if isOwner(userId);
+    }
+
+    // ---------------------------------------------------------------
+    // users/{userId}/extraction_item_kinds/{kindId}
+    // ---------------------------------------------------------------
+
+    function isValidExtractionItemKind(data, userId) {
+      return hasExactShape(
+          data,
+          ['userId', 'slug', 'displayName', 'extractionHint', 'behavior', 'datePolicy', 'notePolicy', 'ownerPolicy', 'enabledForExtraction', 'isBuiltIn', 'sortOrder', 'teachingExamplesJson', 'createdAt', 'updatedAt', 'isDeleted'],
+          ['userId', 'slug', 'displayName', 'behavior', 'datePolicy', 'notePolicy', 'ownerPolicy', 'enabledForExtraction', 'isBuiltIn', 'sortOrder', 'createdAt', 'updatedAt', 'isDeleted']
+        )
+        && bodyIsOwnedBy(data, userId)
+        && isKindSlug(data.slug)
+        && isBoundedString(data.displayName, 1, 80)
+        && isOptionalBoundedString(data, 'extractionHint', 400)
+        && isKindBehavior(data.behavior)
+        && isKindFieldPolicy(data.datePolicy)
+        && isKindFieldPolicy(data.notePolicy)
+        && isKindFieldPolicy(data.ownerPolicy)
+        && data.enabledForExtraction is bool
+        && data.isBuiltIn is bool
+        && data.sortOrder is int
+        && data.sortOrder >= 0
+        && data.sortOrder <= 1000
+        && isOptionalBoundedString(data, 'teachingExamplesJson', 4000)
+        && isTombstoneFlag(data)
+        && hasSaneTimestamps(data);
+    }
+
+    match /users/{userId}/extraction_item_kinds/{kindId} {
+      allow read: if isOwner(userId);
+
+      allow create: if isOwner(userId)
+        && isValidExtractionItemKind(request.resource.data, userId);
+
+      allow update: if isOwner(userId)
+        && isValidExtractionItemKind(request.resource.data, userId)
+        && areFieldsUnchanged(['userId', 'slug', 'isBuiltIn', 'createdAt']);
+
+      allow delete: if isOwner(userId);
+    }
+
+    // ---------------------------------------------------------------
+    // users/{userId}/ai_processing_consents/{consentId}
+    // ---------------------------------------------------------------
+
+    function isValidAiProcessingConsent(data, userId) {
+      return hasExactShape(
+          data,
+          ['userId', 'status', 'createdAt', 'updatedAt', 'isDeleted'],
+          ['userId', 'status', 'createdAt', 'updatedAt', 'isDeleted']
+        )
+        && bodyIsOwnedBy(data, userId)
+        && data.status in ['unknown', 'granted', 'declined']
+        && isTombstoneFlag(data)
+        && hasSaneTimestamps(data);
+    }
+
+    match /users/{userId}/ai_processing_consents/{consentId} {
+      allow read: if isOwner(userId);
+
+      allow create: if isOwner(userId)
+        && isValidAiProcessingConsent(request.resource.data, userId);
+
+      allow update: if isOwner(userId)
+        && isValidAiProcessingConsent(request.resource.data, userId)
+        && areFieldsUnchanged(['userId', 'createdAt']);
+
+      allow delete: if isOwner(userId);
+    }
+
+    // ---------------------------------------------------------------
+    // users/{userId}/extraction_runs/{runId}
+    // ---------------------------------------------------------------
+
+    function isValidExtractionRun(data, userId) {
+      return hasExactShape(
+          data,
+          ['userId', 'sourceConversationId', 'sourceConversationTitle', 'modelId', 'modelDisplayName', 'startedAt', 'completedAt', 'status', 'durationMs', 'enabledKindSlugsJson', 'kindCountsJson', 'acceptedCount', 'rejectedCount', 'pendingCount', 'createdAt', 'updatedAt', 'isDeleted'],
+          ['userId', 'modelId', 'startedAt', 'completedAt', 'status', 'durationMs', 'enabledKindSlugsJson', 'kindCountsJson', 'acceptedCount', 'rejectedCount', 'pendingCount', 'createdAt', 'updatedAt', 'isDeleted']
+        )
+        && bodyIsOwnedBy(data, userId)
+        && isOptionalBoundedString(data, 'sourceConversationId', 128)
+        && isOptionalBoundedString(data, 'sourceConversationTitle', 200)
+        && isBoundedString(data.modelId, 1, 128)
+        && isOptionalBoundedString(data, 'modelDisplayName', 200)
+        && data.startedAt is timestamp
+        && data.completedAt is timestamp
+        && data.startedAt <= data.completedAt
+        && data.completedAt <= request.time + duration.value(5, 'm')
+        && data.status in ['success', 'failure']
+        && data.durationMs is int
+        && data.durationMs >= 0
+        && data.durationMs <= 86400000
+        && isBoundedString(data.enabledKindSlugsJson, 1, 500)
+        && isBoundedString(data.kindCountsJson, 1, 2000)
+        && data.acceptedCount is int
+        && data.acceptedCount >= 0
+        && data.acceptedCount <= 10000
+        && data.rejectedCount is int
+        && data.rejectedCount >= 0
+        && data.rejectedCount <= 10000
+        && data.pendingCount is int
+        && data.pendingCount >= 0
+        && data.pendingCount <= 10000
+        && isTombstoneFlag(data)
+        && hasSaneTimestamps(data);
+    }
+
+    match /users/{userId}/extraction_runs/{runId} {
+      allow read: if isOwner(userId);
+
+      allow create: if isOwner(userId)
+        && isValidExtractionRun(request.resource.data, userId);
+
+      // Extraction run history is write-once: the aggregate stats are
+      // immutable. Only the tombstone flag and updatedAt may move.
+      allow update: if isOwner(userId)
+        && isValidExtractionRun(request.resource.data, userId)
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['isDeleted', 'updatedAt']);
+
+      allow delete: if isOwner(userId);
+    }
+
+    // ---------------------------------------------------------------
+    // Deny everything else, including collection-group queries and any
+    // future server-owned document.
+    // ---------------------------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
