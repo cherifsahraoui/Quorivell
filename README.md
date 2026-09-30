@@ -170,7 +170,10 @@ Large parts of this codebase were written with AI assistance in
 generated wiring with healthy skepticism — review before you rely on them in
 production, and prefer tests over assumptions.
 
-Contributions welcome — please open an issue before large architectural PRs.
+Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Please open an
+issue before large architectural PRs. Everyone in the project spaces is expected
+to follow the [Code of Conduct](CODE_OF_CONDUCT.md). To report a vulnerability,
+see [SECURITY.md](SECURITY.md).
 
 ---
 
