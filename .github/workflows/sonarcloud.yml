@@ -1,6 +1,5 @@
-# SonarQube Cloud analysis for the public Quorivell repo (Dart/Flutter).
-# Automatic analysis does not support Dart — this CI path is required.
-# Manual setup (token + turn off auto-analysis): docs/internal/sonarcloud.md
+# SonarQube Cloud analysis (Dart/Flutter).
+# Automatic analysis does not support Dart — CI analysis is required.
 name: SonarCloud
 
 on:
