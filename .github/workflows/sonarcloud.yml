@@ -1,0 +1,51 @@
+# SonarQube Cloud analysis for the public Quorivell repo (Dart/Flutter).
+# Automatic analysis does not support Dart — this CI path is required.
+# Manual setup (token + turn off auto-analysis): docs/internal/sonarcloud.md
+name: SonarCloud
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: sonarcloud-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sonarcloud:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate code
+        run: |
+          dart run build_runner build --delete-conflicting-outputs
+          flutter gen-l10n
+
+      - name: Unit tests with coverage
+        run: flutter test --coverage
+
+      - name: SonarQube Cloud Scan
+        uses: SonarSource/sonarqube-scan-action@v6
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
