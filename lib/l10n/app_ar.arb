@@ -624,7 +624,7 @@
   "extractionKindsBannerDismiss": "حسناً",
   "extractionKindTemplateSection": "البدء من قالب",
   "extractionKindTemplateGroceries": "مشتريات",
-  "extractionKindTemplateGroceriesHint": "عناصر تسوق بأسماء قصيرة (حليب، سكر). مرشّح واحد لكل عنصر. قسّم القوائم. لا وصفات ولا آراء.‏",
+  "extractionKindTemplateGroceriesHint": "عناصر تسوق بأسماء قصيرة (حليب، دقيق، سكر). مرشّح واحد لكل عنصر. قسّم القوائم وأسطر مكوّنات الوصفات (كوب حليب → حليب). تجاهل خطوات الطبخ والنصائح والآراء.‏",
   "extractionKindTemplateFollowUp": "متابعة",
   "extractionKindTemplateFollowUpHint": "تحقق لاحق أو سؤال بلا إجابة ما زال يحتاج شخصاً يتصرف.‏",
   "extractionKindExamplesTitle": "أمثلة للتعليم",
@@ -651,6 +651,8 @@
   "captureUrlHelp": "الصق رابطاً أو شارك عنوان صفحة، ثم اجلب النص الرئيسي للاستخراج.‏",
   "captureUrlInvalid": "أدخل رابط http أو https صالحاً.‏",
   "captureUrlFetchFailed": "تعذّر جلب تلك الصفحة. الصق النص بدلاً من ذلك.‏",
+  "sourceConversationWebsiteLabel": "من موقع ويب",
+  "sourceConversationOpenWebsite": "فتح الصفحة",
   "conversationUnarchiveTitle": "استعادة إلى النشطة؟‏",
   "conversationUnarchiveBody": "سيُعاد نقل المحادثة إلى النشطة حتى تتمكن من الاستخراج منها مرة أخرى.‏",
   "conversationUnarchiveConfirm": "استعادة‏",
@@ -723,7 +725,7 @@
       }
     }
   },
-  "extractionCustomKindsOnePerItemGuidance": "مرشّح واحد لكل عنصر: عندما يذكر السطر عدة مطابقات (حليب وبيض وخبز؛ Alice وBob) أخرج مرشّحاً منفصلاً لكل عنصر. يجب أن يكون statement اسم العنصر القصير وحده (حليب، بيض، خبز، Emila) — وليس جملة ولا اشترِ حليباً. quoteSnippet كلمات دليل من المحادثة (نحتاج حليباً) ويجب أن يختلف عن statement. لا تدمج قائمة كاملة في مرشّح واحد.‏",
+  "extractionCustomKindsOnePerItemGuidance": "مرشّح واحد لكل عنصر: عندما يذكر السطر عدة مطابقات (حليب وبيض وخبز؛ Alice وBob) أو يذكر سطر مكوّن مُقاس عنصراً (1.5 كوب دقيق متعدد الأغراض؛ 3 ملاعق كبيرة زبدة مذابة؛ بيضة واحدة) أخرج مرشّحاً منفصلاً لكل مطابقة. يجب أن يكون statement اسم العنصر القصير وحده (دقيق، بيكنغ باودر، حليب، زبدة، بيض، Emila) — وليس السطر المقاس كاملاً ولا اشترِ حليباً. quoteSnippet كلمات دليل من المحادثة ويجب أن يختلف عن statement. لا تدمج قائمة كاملة في مرشّح واحد. لا تتخطَّ قوائم المكوّنات فقط لأنها في وصفة.‏",
   "@extractionCustomKindsOnePerItemGuidance": {
     "description": "List-splitting guidance for custom kinds on small on-device models."
   },
@@ -760,12 +762,12 @@
   "extractionKindSampleExcerptMilk": "ما زلنا نحتاج حليباً لهذا الأسبوع.",
   "extractionKindSampleQuoteMilk": "نحتاج حليباً",
   "extractionKindSampleStatementMilk": "حليب",
-  "extractionKindSampleExcerptEggs": "ما زلنا نحتاج بيضاً لهذا الأسبوع.",
-  "extractionKindSampleQuoteEggs": "نحتاج بيضاً",
+  "extractionKindSampleExcerptEggs": "أضف بيضتين إلى العجينة.",
+  "extractionKindSampleQuoteEggs": "بيضتين",
   "extractionKindSampleStatementEggs": "بيض",
-  "extractionKindSampleExcerptBread": "أضف خبزاً إلى قائمة التسوق.",
-  "extractionKindSampleQuoteBread": "أضف خبزاً",
-  "extractionKindSampleStatementBread": "خبز",
+  "extractionKindSampleExcerptBread": "كوب سكر",
+  "extractionKindSampleQuoteBread": "كوب سكر",
+  "extractionKindSampleStatementBread": "سكر",
   "@extractionKindSampleExcerptMilk": {
     "description": "Sample teaching-example field for groceries starter (extractionKindSampleExcerptMilk)."
   },

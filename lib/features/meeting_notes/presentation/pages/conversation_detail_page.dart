@@ -12,6 +12,7 @@ import '../../data/providers/source_conversation_providers.dart';
 import '../controllers/conversation_actions_controller.dart';
 import '../widgets/confirm_delete_conversation_dialog.dart';
 import '../widgets/conversation_evidence_highlight.dart';
+import '../widgets/source_conversation_website_link.dart';
 
 class ConversationDetailPage extends ConsumerWidget {
   const ConversationDetailPage({
@@ -96,6 +97,7 @@ class ConversationDetailPage extends ConsumerWidget {
             );
           }
           final dateFormat = DateFormat.yMMMd().add_jm();
+          final sourceUrl = value.sourceUrl;
           return CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
@@ -124,6 +126,25 @@ class ConversationDetailPage extends ConsumerWidget {
                   ),
                 ),
               ),
+              if (sourceUrl != null && sourceUrl.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      0,
+                      AppSpacing.lg,
+                      AppSpacing.md,
+                    ),
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        child: SourceConversationWebsiteLink(
+                          sourceUrl: sourceUrl,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(

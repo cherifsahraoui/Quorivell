@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quorivell/core/database/app_database.dart';
 import 'package:quorivell/features/assistant/domain/entities/extraction_run.dart';
-import 'package:quorivell/features/assistant/presentation/pages/extraction_run_detail_page.dart';
+import 'package:quorivell/features/assistant/presentation/utils/extraction_run_results.dart';
 import 'package:quorivell/features/extraction_kinds/presentation/pages/extraction_kinds_page.dart';
 
 import '../../../helpers/extraction_kind_catalog.dart';

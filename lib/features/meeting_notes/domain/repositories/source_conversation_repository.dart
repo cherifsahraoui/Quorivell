@@ -1,7 +1,11 @@
 import '../entities/source_conversation.dart';
 
 abstract interface class SourceConversationRepository {
-  Future<SourceConversation> capture(String content);
+  /// Persists paste or fetched webpage text.
+  ///
+  /// [sourceUrl] is the original http(s) page when Capture fetched the text;
+  /// omit or null for plain paste.
+  Future<SourceConversation> capture(String content, {String? sourceUrl});
 
   /// Newest non-deleted, non-archived conversation.
   Future<SourceConversation?> latest();

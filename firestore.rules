@@ -306,7 +306,7 @@ service cloud.firestore {
     function isValidSourceConversation(data, userId) {
       return hasExactShape(
           data,
-          ['userId', 'content', 'sourceRevision', 'createdAt', 'updatedAt', 'isDeleted', 'isArchived'],
+          ['userId', 'content', 'sourceUrl', 'sourceRevision', 'createdAt', 'updatedAt', 'isDeleted', 'isArchived'],
           ['userId', 'content', 'sourceRevision', 'createdAt', 'updatedAt', 'isDeleted', 'isArchived']
         )
         && bodyIsOwnedBy(data, userId)
@@ -314,11 +314,21 @@ service cloud.firestore {
         // long transcripts belong on-device, and an unbounded string field is
         // a resource-exhaustion vector.
         && isBoundedString(data.content, 1, 20000)
+        && isOptionalSourceUrl(data)
         && data.sourceRevision is int
         && data.sourceRevision >= 1
         && isTombstoneFlag(data)
         && data.isArchived is bool
         && hasSaneTimestamps(data);
+    }
+
+    // Optional Capture webpage origin: absent/null for paste, otherwise a
+    // bounded http(s) URL (never mirrored as the document id).
+    function isOptionalSourceUrl(data) {
+      return !( 'sourceUrl' in data )
+        || data.sourceUrl == null
+        || (isBoundedString(data.sourceUrl, 1, 2000)
+            && data.sourceUrl.matches('^https?://.+'));
     }
 
     match /users/{userId}/source_conversations/{conversationId} {

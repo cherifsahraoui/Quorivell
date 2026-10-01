@@ -21,6 +21,9 @@ class SourceConversations extends Table {
   TextColumn get id => text()();
   TextColumn get userId => text()();
   TextColumn get content => text()();
+
+  /// Original http(s) page when Capture fetched webpage text; null for paste.
+  TextColumn get sourceUrl => text().nullable()();
   IntColumn get sourceRevision => integer()();
   IntColumn get createdAt => integer()();
   IntColumn get updatedAt => integer()();
@@ -281,7 +284,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   /// Permanently removes user content while keeping device-local identity,
   /// preferences, AI-processing consent, and the extraction kind catalog.
@@ -464,6 +467,9 @@ END
 WHERE kind_display_name_snapshot IS NULL OR kind_display_name_snapshot = ''
 ''');
         await seedBuiltInExtractionKinds();
+      }
+      if (from < 12) {
+        await m.addColumn(sourceConversations, sourceConversations.sourceUrl);
       }
     },
   );

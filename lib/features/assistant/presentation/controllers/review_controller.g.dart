@@ -596,7 +596,7 @@ final class ReviewActionsControllerProvider
 }
 
 String _$reviewActionsControllerHash() =>
-    r'9e9e8710ccd39ea115df32395e80d5082a203689';
+    r'70fae23e340a2c74423a648523ec9a68860fedda';
 
 /// Review workflow: extract from active captures (one id or a batch), accept a
 /// candidate into the ledger, and record corrections or a changed review

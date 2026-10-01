@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../../core/database/app_database.dart';
@@ -25,12 +26,13 @@ class SourceConversationRepositoryImpl implements SourceConversationRepository {
   final DateTime Function() _now;
 
   @override
-  Future<SourceConversation> capture(String content) {
+  Future<SourceConversation> capture(String content, {String? sourceUrl}) {
     return guardLocalWrite(() async {
       final normalizedContent = content.trim();
       if (normalizedContent.isEmpty) {
         throw const LocalPersistenceFailure.invalidInput();
       }
+      final normalizedUrl = _normalizeSourceUrl(sourceUrl);
 
       final userScope = await _localUserScopeRepository.getOrCreate();
       final timestamp = _now();
@@ -38,6 +40,7 @@ class SourceConversationRepositoryImpl implements SourceConversationRepository {
         id: _uuid.v4(),
         userId: userScope.id,
         content: normalizedContent,
+        sourceUrl: normalizedUrl,
         sourceRevision: 1,
         createdAt: timestamp,
         updatedAt: timestamp,
@@ -47,6 +50,7 @@ class SourceConversationRepositoryImpl implements SourceConversationRepository {
           id: conversation.id,
           userId: conversation.userId,
           content: conversation.content,
+          sourceUrl: Value(conversation.sourceUrl),
           sourceRevision: conversation.sourceRevision,
           createdAt: conversation.createdAt.millisecondsSinceEpoch,
           updatedAt: conversation.updatedAt.millisecondsSinceEpoch,
@@ -139,9 +143,22 @@ class SourceConversationRepositoryImpl implements SourceConversationRepository {
     id: row.id,
     userId: row.userId,
     content: row.content,
+    sourceUrl: row.sourceUrl,
     sourceRevision: row.sourceRevision,
     createdAt: DateTime.fromMillisecondsSinceEpoch(row.createdAt, isUtc: true),
     updatedAt: DateTime.fromMillisecondsSinceEpoch(row.updatedAt, isUtc: true),
     isArchived: row.isArchived,
   );
+
+  /// Keeps only a bounded http(s) URL; anything else is treated as paste-only.
+  static String? _normalizeSourceUrl(String? raw) {
+    final trimmed = raw?.trim();
+    if (trimmed == null || trimmed.isEmpty) return null;
+    if (trimmed.length > 2000) return null;
+    final uri = Uri.tryParse(trimmed);
+    if (uri == null || !uri.hasScheme || !uri.hasAuthority) return null;
+    final scheme = uri.scheme.toLowerCase();
+    if (scheme != 'http' && scheme != 'https') return null;
+    return uri.toString();
+  }
 }

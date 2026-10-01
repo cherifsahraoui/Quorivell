@@ -34,14 +34,37 @@ void main() {
       expect(captured.id, matches(RegExp(r'^[0-9a-f-]{36}$')));
       expect(captured.userId, isNotEmpty);
       expect(captured.content, 'Synthetic conversation.');
+      expect(captured.sourceUrl, isNull);
       expect(captured.sourceRevision, 1);
       expect(rows, hasLength(1));
       expect(rows.single.id, captured.id);
       expect(rows.single.userId, captured.userId);
       expect(rows.single.content, captured.content);
+      expect(rows.single.sourceUrl, isNull);
       expect(rows.single.sourceRevision, 1);
     },
   );
+
+  test('captures optional webpage sourceUrl with fetched text', () async {
+    final captured = await repository.capture(
+      'Article body.',
+      sourceUrl: '  https://example.com/article  ',
+    );
+
+    expect(captured.sourceUrl, 'https://example.com/article');
+    final row =
+        (await database.select(database.sourceConversations).get()).single;
+    expect(row.sourceUrl, 'https://example.com/article');
+  });
+
+  test('drops invalid sourceUrl values on capture', () async {
+    final captured = await repository.capture(
+      'Paste only.',
+      sourceUrl: 'ftp://example.com',
+    );
+
+    expect(captured.sourceUrl, isNull);
+  });
 
   test('rejects empty source text with a typed failure', () async {
     await expectLater(

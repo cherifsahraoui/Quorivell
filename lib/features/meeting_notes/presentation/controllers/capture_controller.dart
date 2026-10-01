@@ -12,10 +12,14 @@ class CaptureController extends _$CaptureController {
 
   /// Persists the conversation locally. Extraction is a Review action, not
   /// part of save: loading a GGUF spawns an isolate and can stall the UI.
-  Future<void> capture(String content) async {
+  ///
+  /// [sourceUrl] is the original webpage when Capture fetched page text.
+  Future<void> capture(String content, {String? sourceUrl}) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(
-      () => ref.read(sourceConversationRepositoryProvider).capture(content),
+      () => ref
+          .read(sourceConversationRepositoryProvider)
+          .capture(content, sourceUrl: sourceUrl),
     );
   }
 }

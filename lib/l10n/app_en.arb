@@ -2876,7 +2876,7 @@
   "@extractionKindTemplateGroceries": {
     "description": "Configurable extraction copy for extractionKindTemplateGroceries."
   },
-  "extractionKindTemplateGroceriesHint": "Shopping items as short names (Milk, Sugar). One candidate per item. Split lists. Skip recipes and opinions.",
+  "extractionKindTemplateGroceriesHint": "Shopping items as short names (Milk, Flour, Sugar). One candidate per item. Split lists and recipe ingredient lines (1 cup milk → Milk). Skip cooking steps, tips, and opinions.",
   "@extractionKindTemplateGroceriesHint": {
     "description": "Configurable extraction copy for extractionKindTemplateGroceriesHint."
   },
@@ -3009,6 +3009,14 @@
   "captureUrlFetchFailed": "Could not fetch that page. Paste the text instead.",
   "@captureUrlFetchFailed": {
     "description": "Error when Capture webpage fetch fails."
+  },
+  "sourceConversationWebsiteLabel": "From website",
+  "@sourceConversationWebsiteLabel": {
+    "description": "Label when a saved conversation was fetched from a webpage URL."
+  },
+  "sourceConversationOpenWebsite": "Open page",
+  "@sourceConversationOpenWebsite": {
+    "description": "Action to open the original webpage for a Capture in the browser."
   },
   "conversationUnarchiveTitle": "Restore to Active?",
   "@conversationUnarchiveTitle": {
@@ -3156,7 +3164,7 @@
       }
     }
   },
-  "extractionCustomKindsOnePerItemGuidance": "ONE CANDIDATE PER ITEM: when a line lists several matches (milk, eggs, and bread; Alice and Bob), emit a separate candidate for each item. statement must be the short item name alone (Milk, Eggs, Bread, Emila) — not a sentence and not Buy milk. quoteSnippet is evidence words from the conversation (need milk) and must differ from statement. Never merge a whole list into one candidate.",
+  "extractionCustomKindsOnePerItemGuidance": "ONE CANDIDATE PER ITEM: when a line lists several matches (milk, eggs, and bread; Alice and Bob), or a measured recipe/ingredient line names an item (1.5 cups all-purpose flour; 3 tablespoons butter, melted; 1 egg), emit a separate candidate for each match. statement must be the short item name alone (Flour, Baking powder, Milk, Butter, Eggs, Emila) — not the full measured line and not Buy milk. quoteSnippet is evidence words from the conversation and must differ from statement. Never merge a whole list into one candidate. Do not skip ingredient lists just because they appear in a recipe.",
   "@extractionCustomKindsOnePerItemGuidance": {
     "description": "List-splitting guidance for custom kinds on small on-device models."
   },
@@ -3179,12 +3187,12 @@
   "extractionKindSampleExcerptMilk": "We still need milk for the week.",
   "extractionKindSampleQuoteMilk": "need milk",
   "extractionKindSampleStatementMilk": "Milk",
-  "extractionKindSampleExcerptEggs": "We still need eggs for the week.",
-  "extractionKindSampleQuoteEggs": "need eggs",
+  "extractionKindSampleExcerptEggs": "Add 2 eggs to the batter.",
+  "extractionKindSampleQuoteEggs": "2 eggs",
   "extractionKindSampleStatementEggs": "Eggs",
-  "extractionKindSampleExcerptBread": "Add bread to the shopping list.",
-  "extractionKindSampleQuoteBread": "Add bread",
-  "extractionKindSampleStatementBread": "Bread",
+  "extractionKindSampleExcerptBread": "1 cup sugar",
+  "extractionKindSampleQuoteBread": "1 cup sugar",
+  "extractionKindSampleStatementBread": "Sugar",
   "@extractionKindSampleExcerptMilk": {
     "description": "Sample teaching-example field for groceries starter (extractionKindSampleExcerptMilk)."
   },

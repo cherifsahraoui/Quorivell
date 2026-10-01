@@ -3871,7 +3871,7 @@ abstract class AppLocalizations {
   /// Configurable extraction copy for extractionKindTemplateGroceriesHint.
   ///
   /// In en, this message translates to:
-  /// **'Shopping items as short names (Milk, Sugar). One candidate per item. Split lists. Skip recipes and opinions.'**
+  /// **'Shopping items as short names (Milk, Flour, Sugar). One candidate per item. Split lists and recipe ingredient lines (1 cup milk → Milk). Skip cooking steps, tips, and opinions.'**
   String get extractionKindTemplateGroceriesHint;
 
   /// Configurable extraction copy for extractionKindTemplateFollowUp.
@@ -4029,6 +4029,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not fetch that page. Paste the text instead.'**
   String get captureUrlFetchFailed;
+
+  /// Label when a saved conversation was fetched from a webpage URL.
+  ///
+  /// In en, this message translates to:
+  /// **'From website'**
+  String get sourceConversationWebsiteLabel;
+
+  /// Action to open the original webpage for a Capture in the browser.
+  ///
+  /// In en, this message translates to:
+  /// **'Open page'**
+  String get sourceConversationOpenWebsite;
 
   /// Title of the restore-archived-conversation confirmation dialog.
   ///
@@ -4204,7 +4216,7 @@ abstract class AppLocalizations {
   /// List-splitting guidance for custom kinds on small on-device models.
   ///
   /// In en, this message translates to:
-  /// **'ONE CANDIDATE PER ITEM: when a line lists several matches (milk, eggs, and bread; Alice and Bob), emit a separate candidate for each item. statement must be the short item name alone (Milk, Eggs, Bread, Emila) — not a sentence and not Buy milk. quoteSnippet is evidence words from the conversation (need milk) and must differ from statement. Never merge a whole list into one candidate.'**
+  /// **'ONE CANDIDATE PER ITEM: when a line lists several matches (milk, eggs, and bread; Alice and Bob), or a measured recipe/ingredient line names an item (1.5 cups all-purpose flour; 3 tablespoons butter, melted; 1 egg), emit a separate candidate for each match. statement must be the short item name alone (Flour, Baking powder, Milk, Butter, Eggs, Emila) — not the full measured line and not Buy milk. quoteSnippet is evidence words from the conversation and must differ from statement. Never merge a whole list into one candidate. Do not skip ingredient lists just because they appear in a recipe.'**
   String get extractionCustomKindsOnePerItemGuidance;
 
   /// Optional due-date instructions appended when any enabled kind allows dates.
@@ -4252,13 +4264,13 @@ abstract class AppLocalizations {
   /// Sample teaching-example field for groceries starter (extractionKindSampleExcerptEggs).
   ///
   /// In en, this message translates to:
-  /// **'We still need eggs for the week.'**
+  /// **'Add 2 eggs to the batter.'**
   String get extractionKindSampleExcerptEggs;
 
   /// Sample teaching-example field for groceries starter (extractionKindSampleQuoteEggs).
   ///
   /// In en, this message translates to:
-  /// **'need eggs'**
+  /// **'2 eggs'**
   String get extractionKindSampleQuoteEggs;
 
   /// Sample teaching-example field for groceries starter (extractionKindSampleStatementEggs).
@@ -4270,19 +4282,19 @@ abstract class AppLocalizations {
   /// Sample teaching-example field for groceries starter (extractionKindSampleExcerptBread).
   ///
   /// In en, this message translates to:
-  /// **'Add bread to the shopping list.'**
+  /// **'1 cup sugar'**
   String get extractionKindSampleExcerptBread;
 
   /// Sample teaching-example field for groceries starter (extractionKindSampleQuoteBread).
   ///
   /// In en, this message translates to:
-  /// **'Add bread'**
+  /// **'1 cup sugar'**
   String get extractionKindSampleQuoteBread;
 
   /// Sample teaching-example field for groceries starter (extractionKindSampleStatementBread).
   ///
   /// In en, this message translates to:
-  /// **'Bread'**
+  /// **'Sugar'**
   String get extractionKindSampleStatementBread;
 }
 

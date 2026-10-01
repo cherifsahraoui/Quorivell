@@ -103,8 +103,9 @@ Allowed keys (no `id`, no `syncStatus`):
 
 ### `source_conversations/{id}`
 
-`userId` (immutable), `content` (1..20000), `sourceRevision` (>= 1, non-decreasing),
-`createdAt` (immutable), `updatedAt`, `isDeleted`, `isArchived`.
+`userId` (immutable), `content` (1..20000), `sourceUrl` (optional http(s)
+URL, 1..2000), `sourceRevision` (>= 1, non-decreasing), `createdAt`
+(immutable), `updatedAt`, `isDeleted`, `isArchived`.
 
 ### `ledger_items/{id}`
 
@@ -220,8 +221,9 @@ Local SQLite file: `quorivell_local.sqlite` in application documents.
 
 ### `source_conversations` → `SourceConversation`
 
-`id`, `userId`, `content`, `sourceRevision`, `createdAt`, `updatedAt`,
-`isArchived` (default false). Persistence also has `isDeleted`, `syncStatus`.
+`id`, `userId`, `content`, `sourceUrl` (optional; original webpage when Capture
+fetched page text), `sourceRevision`, `createdAt`, `updatedAt`, `isArchived`
+(default false). Persistence also has `isDeleted`, `syncStatus`.
 
 ### `ledger_items` → `LedgerItem`
 

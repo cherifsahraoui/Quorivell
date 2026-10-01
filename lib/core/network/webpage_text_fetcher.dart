@@ -64,8 +64,9 @@ class HttpWebpageTextFetcher implements WebpageTextFetcher {
           url,
           headers: const {
             'Accept': 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
             'User-Agent':
-                'Quorivell/1.0 (local capture; +https://quorivell.app)',
+                'Mozilla/5.0 (compatible; Quorivell/1.0; +https://quorivell.app)',
           },
         )
         .timeout(const Duration(seconds: 20));
@@ -110,6 +111,13 @@ class WebpageFetchException implements Exception {
 }
 
 ({String? title, String text}) extractMainTextFromHtml(String html) {
+  // Recipe sites often embed a clean ingredient list in JSON-LD. Prefer that
+  // over noisy article chrome (reviews, nutrition, related recipes).
+  final recipe = extractRecipePlainTextFromJsonLd(html);
+  if (recipe != null) {
+    return (title: recipe.title, text: _clampText(recipe.text));
+  }
+
   var working = html;
 
   // Drop non-content blocks early.
@@ -162,6 +170,93 @@ class WebpageFetchException implements Exception {
   ].join('\n\n').trim();
 
   return (title: titleText, text: _clampText(combined));
+}
+
+/// When [html] contains Schema.org Recipe JSON-LD with ingredients, returns a
+/// compact plain-text capture (title + ingredient lines). Otherwise null.
+({String? title, String text})? extractRecipePlainTextFromJsonLd(String html) {
+  final scriptPattern = RegExp(
+    r'''<script[^>]*type\s*=\s*["']application/ld\+json["'][^>]*>([\s\S]*?)</script>''',
+    caseSensitive: false,
+  );
+
+  for (final match in scriptPattern.allMatches(html)) {
+    final raw = match.group(1)?.trim();
+    if (raw == null || raw.isEmpty) continue;
+
+    Object? decoded;
+    try {
+      decoded = jsonDecode(raw);
+    } catch (_) {
+      continue;
+    }
+
+    final recipe = _findRecipeNode(decoded);
+    if (recipe == null) continue;
+
+    final ingredients = _recipeIngredientLines(recipe);
+    if (ingredients.isEmpty) continue;
+
+    final nameValue = recipe['name'];
+    final title = nameValue is String ? _htmlToPlainText(nameValue) : null;
+    final buffer = StringBuffer();
+    if (title != null && title.isNotEmpty) {
+      buffer
+        ..writeln(title)
+        ..writeln();
+    }
+    buffer.writeln('Ingredients:');
+    for (final line in ingredients) {
+      buffer.writeln(line);
+    }
+    return (title: title, text: buffer.toString().trim());
+  }
+
+  return null;
+}
+
+Map<String, dynamic>? _findRecipeNode(Object? node) {
+  if (node is Map) {
+    final map = Map<String, dynamic>.from(node);
+    if (_isRecipeType(map['@type'])) {
+      return map;
+    }
+    final graph = map['@graph'];
+    if (graph is List) {
+      for (final child in graph) {
+        final found = _findRecipeNode(child);
+        if (found != null) return found;
+      }
+    }
+  } else if (node is List) {
+    for (final child in node) {
+      final found = _findRecipeNode(child);
+      if (found != null) return found;
+    }
+  }
+  return null;
+}
+
+bool _isRecipeType(Object? type) {
+  if (type is String) {
+    return type == 'Recipe' || type.endsWith('/Recipe');
+  }
+  if (type is List) {
+    return type.any(_isRecipeType);
+  }
+  return false;
+}
+
+List<String> _recipeIngredientLines(Map<String, dynamic> recipe) {
+  final raw = recipe['recipeIngredient'] ?? recipe['ingredients'];
+  if (raw is! List) return const [];
+  final lines = <String>[];
+  for (final item in raw) {
+    if (item is! String) continue;
+    final line = _htmlToPlainText(item);
+    if (line.isNotEmpty) lines.add(line);
+  }
+  return lines;
 }
 
 String? _firstGroup(RegExp pattern, String input) {

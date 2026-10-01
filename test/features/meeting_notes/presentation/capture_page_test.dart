@@ -54,17 +54,24 @@ class _FakeSourceConversationRepository
   final Completer<SourceConversation>? pending;
   String? capturedContent;
 
+  String? capturedSourceUrl;
+
   @override
-  Future<SourceConversation> capture(String content) async {
+  Future<SourceConversation> capture(
+    String content, {
+    String? sourceUrl,
+  }) async {
     if (pending != null) return pending!.future;
     if (content.trim().isEmpty) {
       throw const LocalPersistenceFailure.invalidInput();
     }
     capturedContent = content;
+    capturedSourceUrl = sourceUrl;
     return SourceConversation(
       id: 'source-id',
       userId: 'user-id',
       content: content.trim(),
+      sourceUrl: sourceUrl,
       sourceRevision: 1,
       createdAt: DateTime.utc(2026, 9, 7),
       updatedAt: DateTime.utc(2026, 9, 7),

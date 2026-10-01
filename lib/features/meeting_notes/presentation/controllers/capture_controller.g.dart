@@ -44,7 +44,7 @@ final class CaptureControllerProvider
   }
 }
 
-String _$captureControllerHash() => r'0e7b371421412a906e25b3e2f6f3bd9656250ec2';
+String _$captureControllerHash() => r'a1f3ca061e86170d2a3e86cc612653d1853d4cbc';
 
 abstract class _$CaptureController
     extends $Notifier<AsyncValue<SourceConversation?>> {

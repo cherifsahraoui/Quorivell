@@ -160,7 +160,7 @@ class _FakeSourceConversationRepository
   final List<SourceConversation> _conversations;
 
   @override
-  Future<SourceConversation> capture(String content) async =>
+  Future<SourceConversation> capture(String content, {String? sourceUrl}) async =>
       throw UnimplementedError();
 
   @override

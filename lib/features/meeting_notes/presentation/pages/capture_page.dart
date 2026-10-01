@@ -122,9 +122,10 @@ class _CapturePageState extends ConsumerState<CapturePage> {
   }
 
   Future<void> _capture() async {
+    final sourceUrl = parseHttpUrl(_urlController.text)?.toString();
     await ref
         .read(captureControllerProvider.notifier)
-        .capture(_conversationController.text);
+        .capture(_conversationController.text, sourceUrl: sourceUrl);
     if (!mounted) return;
 
     final result = ref.read(captureControllerProvider);

@@ -243,6 +243,46 @@ describe('source_conversations', () => {
     );
     await assertSucceeds(updateDoc(doc(db, path), { isArchived: false, updatedAt: LATER_AT }));
   });
+
+  it('allows an optional http(s) sourceUrl from webpage Capture', async () => {
+    const db = ownerDb();
+    await assertSucceeds(
+      setDoc(
+        doc(db, path),
+        validSourceConversation(OWNER_UID, {
+          sourceUrl: 'https://example.com/article',
+        }),
+      ),
+    );
+    await assertSucceeds(
+      setDoc(
+        doc(db, `${path}-null`),
+        validSourceConversation(OWNER_UID, { sourceUrl: null }),
+      ),
+    );
+  });
+
+  it('denies invalid sourceUrl values', async () => {
+    const db = ownerDb();
+    await assertFails(
+      setDoc(
+        doc(db, path),
+        validSourceConversation(OWNER_UID, { sourceUrl: 'ftp://example.com' }),
+      ),
+    );
+    await assertFails(
+      setDoc(
+        doc(db, path),
+        validSourceConversation(OWNER_UID, { sourceUrl: 'not-a-url' }),
+      ),
+    );
+    await assertFails(
+      setDoc(
+        doc(db, path),
+        validSourceConversation(OWNER_UID, { sourceUrl: 'x'.repeat(2001) }),
+      ),
+    );
+  });
 });
 
 describe('ledger_items', () => {

@@ -300,6 +300,17 @@ class $SourceConversationsTable extends SourceConversations
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _sourceUrlMeta = const VerificationMeta(
+    'sourceUrl',
+  );
+  @override
+  late final GeneratedColumn<String> sourceUrl = GeneratedColumn<String>(
+    'source_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _sourceRevisionMeta = const VerificationMeta(
     'sourceRevision',
   );
@@ -380,6 +391,7 @@ class $SourceConversationsTable extends SourceConversations
     id,
     userId,
     content,
+    sourceUrl,
     sourceRevision,
     createdAt,
     updatedAt,
@@ -419,6 +431,12 @@ class $SourceConversationsTable extends SourceConversations
       );
     } else if (isInserting) {
       context.missing(_contentMeta);
+    }
+    if (data.containsKey('source_url')) {
+      context.handle(
+        _sourceUrlMeta,
+        sourceUrl.isAcceptableOrUnknown(data['source_url']!, _sourceUrlMeta),
+      );
     }
     if (data.containsKey('source_revision')) {
       context.handle(
@@ -486,6 +504,10 @@ class $SourceConversationsTable extends SourceConversations
         DriftSqlType.string,
         data['${effectivePrefix}content'],
       )!,
+      sourceUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_url'],
+      ),
       sourceRevision: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}source_revision'],
@@ -524,6 +546,9 @@ class SourceConversationRow extends DataClass
   final String id;
   final String userId;
   final String content;
+
+  /// Original http(s) page when Capture fetched webpage text; null for paste.
+  final String? sourceUrl;
   final int sourceRevision;
   final int createdAt;
   final int updatedAt;
@@ -534,6 +559,7 @@ class SourceConversationRow extends DataClass
     required this.id,
     required this.userId,
     required this.content,
+    this.sourceUrl,
     required this.sourceRevision,
     required this.createdAt,
     required this.updatedAt,
@@ -547,6 +573,9 @@ class SourceConversationRow extends DataClass
     map['id'] = Variable<String>(id);
     map['user_id'] = Variable<String>(userId);
     map['content'] = Variable<String>(content);
+    if (!nullToAbsent || sourceUrl != null) {
+      map['source_url'] = Variable<String>(sourceUrl);
+    }
     map['source_revision'] = Variable<int>(sourceRevision);
     map['created_at'] = Variable<int>(createdAt);
     map['updated_at'] = Variable<int>(updatedAt);
@@ -561,6 +590,9 @@ class SourceConversationRow extends DataClass
       id: Value(id),
       userId: Value(userId),
       content: Value(content),
+      sourceUrl: sourceUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceUrl),
       sourceRevision: Value(sourceRevision),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -579,6 +611,7 @@ class SourceConversationRow extends DataClass
       id: serializer.fromJson<String>(json['id']),
       userId: serializer.fromJson<String>(json['userId']),
       content: serializer.fromJson<String>(json['content']),
+      sourceUrl: serializer.fromJson<String?>(json['sourceUrl']),
       sourceRevision: serializer.fromJson<int>(json['sourceRevision']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
@@ -594,6 +627,7 @@ class SourceConversationRow extends DataClass
       'id': serializer.toJson<String>(id),
       'userId': serializer.toJson<String>(userId),
       'content': serializer.toJson<String>(content),
+      'sourceUrl': serializer.toJson<String?>(sourceUrl),
       'sourceRevision': serializer.toJson<int>(sourceRevision),
       'createdAt': serializer.toJson<int>(createdAt),
       'updatedAt': serializer.toJson<int>(updatedAt),
@@ -607,6 +641,7 @@ class SourceConversationRow extends DataClass
     String? id,
     String? userId,
     String? content,
+    Value<String?> sourceUrl = const Value.absent(),
     int? sourceRevision,
     int? createdAt,
     int? updatedAt,
@@ -617,6 +652,7 @@ class SourceConversationRow extends DataClass
     id: id ?? this.id,
     userId: userId ?? this.userId,
     content: content ?? this.content,
+    sourceUrl: sourceUrl.present ? sourceUrl.value : this.sourceUrl,
     sourceRevision: sourceRevision ?? this.sourceRevision,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -629,6 +665,7 @@ class SourceConversationRow extends DataClass
       id: data.id.present ? data.id.value : this.id,
       userId: data.userId.present ? data.userId.value : this.userId,
       content: data.content.present ? data.content.value : this.content,
+      sourceUrl: data.sourceUrl.present ? data.sourceUrl.value : this.sourceUrl,
       sourceRevision: data.sourceRevision.present
           ? data.sourceRevision.value
           : this.sourceRevision,
@@ -650,6 +687,7 @@ class SourceConversationRow extends DataClass
           ..write('id: $id, ')
           ..write('userId: $userId, ')
           ..write('content: $content, ')
+          ..write('sourceUrl: $sourceUrl, ')
           ..write('sourceRevision: $sourceRevision, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -665,6 +703,7 @@ class SourceConversationRow extends DataClass
     id,
     userId,
     content,
+    sourceUrl,
     sourceRevision,
     createdAt,
     updatedAt,
@@ -679,6 +718,7 @@ class SourceConversationRow extends DataClass
           other.id == this.id &&
           other.userId == this.userId &&
           other.content == this.content &&
+          other.sourceUrl == this.sourceUrl &&
           other.sourceRevision == this.sourceRevision &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
@@ -692,6 +732,7 @@ class SourceConversationsCompanion
   final Value<String> id;
   final Value<String> userId;
   final Value<String> content;
+  final Value<String?> sourceUrl;
   final Value<int> sourceRevision;
   final Value<int> createdAt;
   final Value<int> updatedAt;
@@ -703,6 +744,7 @@ class SourceConversationsCompanion
     this.id = const Value.absent(),
     this.userId = const Value.absent(),
     this.content = const Value.absent(),
+    this.sourceUrl = const Value.absent(),
     this.sourceRevision = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -715,6 +757,7 @@ class SourceConversationsCompanion
     required String id,
     required String userId,
     required String content,
+    this.sourceUrl = const Value.absent(),
     required int sourceRevision,
     required int createdAt,
     required int updatedAt,
@@ -732,6 +775,7 @@ class SourceConversationsCompanion
     Expression<String>? id,
     Expression<String>? userId,
     Expression<String>? content,
+    Expression<String>? sourceUrl,
     Expression<int>? sourceRevision,
     Expression<int>? createdAt,
     Expression<int>? updatedAt,
@@ -744,6 +788,7 @@ class SourceConversationsCompanion
       if (id != null) 'id': id,
       if (userId != null) 'user_id': userId,
       if (content != null) 'content': content,
+      if (sourceUrl != null) 'source_url': sourceUrl,
       if (sourceRevision != null) 'source_revision': sourceRevision,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -758,6 +803,7 @@ class SourceConversationsCompanion
     Value<String>? id,
     Value<String>? userId,
     Value<String>? content,
+    Value<String?>? sourceUrl,
     Value<int>? sourceRevision,
     Value<int>? createdAt,
     Value<int>? updatedAt,
@@ -770,6 +816,7 @@ class SourceConversationsCompanion
       id: id ?? this.id,
       userId: userId ?? this.userId,
       content: content ?? this.content,
+      sourceUrl: sourceUrl ?? this.sourceUrl,
       sourceRevision: sourceRevision ?? this.sourceRevision,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -791,6 +838,9 @@ class SourceConversationsCompanion
     }
     if (content.present) {
       map['content'] = Variable<String>(content.value);
+    }
+    if (sourceUrl.present) {
+      map['source_url'] = Variable<String>(sourceUrl.value);
     }
     if (sourceRevision.present) {
       map['source_revision'] = Variable<int>(sourceRevision.value);
@@ -822,6 +872,7 @@ class SourceConversationsCompanion
           ..write('id: $id, ')
           ..write('userId: $userId, ')
           ..write('content: $content, ')
+          ..write('sourceUrl: $sourceUrl, ')
           ..write('sourceRevision: $sourceRevision, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -8932,6 +8983,7 @@ typedef $$SourceConversationsTableCreateCompanionBuilder =
       required String id,
       required String userId,
       required String content,
+      Value<String?> sourceUrl,
       required int sourceRevision,
       required int createdAt,
       required int updatedAt,
@@ -8945,6 +8997,7 @@ typedef $$SourceConversationsTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> userId,
       Value<String> content,
+      Value<String?> sourceUrl,
       Value<int> sourceRevision,
       Value<int> createdAt,
       Value<int> updatedAt,
@@ -8975,6 +9028,11 @@ class $$SourceConversationsTableFilterComposer
 
   ColumnFilters<String> get content => $composableBuilder(
     column: $table.content,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceUrl => $composableBuilder(
+    column: $table.sourceUrl,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9033,6 +9091,11 @@ class $$SourceConversationsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get sourceUrl => $composableBuilder(
+    column: $table.sourceUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get sourceRevision => $composableBuilder(
     column: $table.sourceRevision,
     builder: (column) => ColumnOrderings(column),
@@ -9081,6 +9144,9 @@ class $$SourceConversationsTableAnnotationComposer
 
   GeneratedColumn<String> get content =>
       $composableBuilder(column: $table.content, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceUrl =>
+      $composableBuilder(column: $table.sourceUrl, builder: (column) => column);
 
   GeneratedColumn<int> get sourceRevision => $composableBuilder(
     column: $table.sourceRevision,
@@ -9153,6 +9219,7 @@ class $$SourceConversationsTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> userId = const Value.absent(),
                 Value<String> content = const Value.absent(),
+                Value<String?> sourceUrl = const Value.absent(),
                 Value<int> sourceRevision = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
@@ -9164,6 +9231,7 @@ class $$SourceConversationsTableTableManager
                 id: id,
                 userId: userId,
                 content: content,
+                sourceUrl: sourceUrl,
                 sourceRevision: sourceRevision,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -9177,6 +9245,7 @@ class $$SourceConversationsTableTableManager
                 required String id,
                 required String userId,
                 required String content,
+                Value<String?> sourceUrl = const Value.absent(),
                 required int sourceRevision,
                 required int createdAt,
                 required int updatedAt,
@@ -9188,6 +9257,7 @@ class $$SourceConversationsTableTableManager
                 id: id,
                 userId: userId,
                 content: content,
+                sourceUrl: sourceUrl,
                 sourceRevision: sourceRevision,
                 createdAt: createdAt,
                 updatedAt: updatedAt,

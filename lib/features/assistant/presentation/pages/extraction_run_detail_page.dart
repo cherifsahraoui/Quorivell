@@ -13,9 +13,11 @@ import '../../../../core/widgets/section_header.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../extraction_kinds/presentation/extraction_kind_labels.dart';
 import '../../../meeting_notes/data/providers/source_conversation_providers.dart';
+import '../../../meeting_notes/presentation/widgets/source_conversation_website_link.dart';
 import '../../data/providers/extraction_providers.dart';
 import '../../domain/entities/extraction_run.dart';
 import '../controllers/review_controller.dart';
+import '../utils/extraction_run_results.dart';
 
 /// Detail view for one completed extraction run from History.
 class ExtractionRunDetailPage extends ConsumerWidget {
@@ -137,31 +139,41 @@ class _ExtractionRunDetailBody extends ConsumerWidget {
                   ),
                 );
               }
+              final sourceUrl = conversation.sourceUrl;
               return Card(
-                child: InkWell(
-                  onTap: () =>
-                      context.push('/capture/sources/${conversation.id}'),
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          conversation.content,
-                          maxLines: 8,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodyMedium,
-                        ),
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (sourceUrl != null && sourceUrl.isNotEmpty) ...[
+                        SourceConversationWebsiteLink(sourceUrl: sourceUrl),
                         const SizedBox(height: AppSpacing.sm),
-                        Text(
-                          l10n.extractionHistoryOpenSource,
-                          style: theme.textTheme.labelLarge?.copyWith(
-                            color: colorScheme.primary,
-                          ),
-                        ),
                       ],
-                    ),
+                      InkWell(
+                        onTap: () =>
+                            context.push('/capture/sources/${conversation.id}'),
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              conversation.content,
+                              maxLines: 8,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            Text(
+                              l10n.extractionHistoryOpenSource,
+                              style: theme.textTheme.labelLarge?.copyWith(
+                                color: colorScheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -173,10 +185,6 @@ class _ExtractionRunDetailBody extends ConsumerWidget {
 }
 
 /// Live accepted / rejected / pending + kind totals for one history run.
-///
-/// Recomputes from current candidate rows in the run's time window so Results
-/// pending stays correct after review, and ignores prior extracts on the same
-/// source (unarchive / re-extract).
 class _ExtractionRunLiveResults extends ConsumerWidget {
   const _ExtractionRunLiveResults({required this.run});
 
@@ -219,53 +227,6 @@ class _ExtractionRunLiveResults extends ConsumerWidget {
       },
     );
   }
-}
-
-/// Pure recount used by the detail screen (and tests).
-@visibleForTesting
-({int accepted, int rejected, int pending, Map<String, int> kindCounts})
-recountExtractionRunResults({
-  required ExtractionRun run,
-  required List<ExtractionCandidateRow>? rows,
-}) {
-  if (rows == null) {
-    return (
-      accepted: run.acceptedCount,
-      rejected: run.rejectedCount,
-      pending: run.pendingCount,
-      kindCounts: Map<String, int>.from(run.kindCounts),
-    );
-  }
-
-  final startedMs = run.startedAt.millisecondsSinceEpoch;
-  // Small grace so candidates written in the same tick as completedAt still
-  // count when clocks / awaits order poorly across isolates.
-  final endMs = run.completedAt.millisecondsSinceEpoch + 2000;
-  var accepted = 0;
-  var rejected = 0;
-  var pending = 0;
-  final kindCounts = <String, int>{};
-
-  for (final row in rows) {
-    if (row.createdAt < startedMs || row.createdAt > endMs) continue;
-    kindCounts[row.kind] = (kindCounts[row.kind] ?? 0) + 1;
-    switch (row.reviewStatus) {
-      case 'accepted':
-        accepted++;
-      case 'rejected':
-        rejected++;
-      default:
-        // pending, deferred, or any unknown open status
-        pending++;
-    }
-  }
-
-  return (
-    accepted: accepted,
-    rejected: rejected,
-    pending: pending,
-    kindCounts: kindCounts,
-  );
 }
 
 class _ResultsChips extends StatelessWidget {

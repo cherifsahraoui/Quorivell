@@ -2379,7 +2379,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get extractionKindTemplateGroceriesHint =>
-      'Einkaufsartikel als kurze Namen (Milch, Zucker). Ein Kandidat pro Artikel. Listen aufteilen. Keine Rezepte oder Meinungen.';
+      'Einkaufsartikel als kurze Namen (Milch, Mehl, Zucker). Ein Kandidat pro Artikel. Listen und Rezept-Zutatenzeilen aufteilen (1 Tasse Milch → Milch). Keine Kochschritte, Tipps oder Meinungen.';
 
   @override
   String get extractionKindTemplateFollowUp => 'Nachfassen';
@@ -2474,6 +2474,12 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get captureUrlFetchFailed =>
       'Seite konnte nicht geladen werden. Füge den Text stattdessen ein.';
+
+  @override
+  String get sourceConversationWebsiteLabel => 'Von Website';
+
+  @override
+  String get sourceConversationOpenWebsite => 'Seite öffnen';
 
   @override
   String get conversationUnarchiveTitle => 'Zu Aktiv wiederherstellen?';
@@ -2587,7 +2593,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get extractionCustomKindsOnePerItemGuidance =>
-      'EIN KANDIDAT PRO EINTRAG: Wenn eine Zeile mehrere Treffer auflistet (Milch, Eier und Brot; Alice und Bob), gib für jeden Eintrag einen eigenen Kandidaten aus. statement muss der kurze Artikelname allein sein (Milch, Eier, Brot, Emila) — kein Satz und nicht Milch kaufen. quoteSnippet sind Beweiswörter aus dem Gespräch (noch Milch) und muss sich von statement unterscheiden. Fasse eine ganze Liste nie in einem Kandidaten zusammen.';
+      'EIN KANDIDAT PRO EINTRAG: Wenn eine Zeile mehrere Treffer auflistet (Milch, Eier und Brot; Alice und Bob) oder eine gemessene Rezept-/Zutatenzeile einen Artikel nennt (1,5 Tassen Mehl; 3 EL Butter, geschmolzen; 1 Ei), gib für jeden Treffer einen eigenen Kandidaten aus. statement muss der kurze Artikelname allein sein (Mehl, Backpulver, Milch, Butter, Eier, Emila) — nicht die volle Mengenzeile und nicht Milch kaufen. quoteSnippet sind Beweiswörter aus dem Gespräch und muss sich von statement unterscheiden. Fasse eine ganze Liste nie in einem Kandidaten zusammen. Überspringe Zutatenlisten nicht nur deshalb, weil sie in einem Rezept stehen.';
 
   @override
   String get extractionPromptDueDateClause =>
@@ -2615,22 +2621,20 @@ class AppLocalizationsDe extends AppLocalizations {
   String get extractionKindSampleStatementMilk => 'Milch';
 
   @override
-  String get extractionKindSampleExcerptEggs =>
-      'Wir brauchen diese Woche noch Eier.';
+  String get extractionKindSampleExcerptEggs => '2 Eier in den Teig geben.';
 
   @override
-  String get extractionKindSampleQuoteEggs => 'noch Eier';
+  String get extractionKindSampleQuoteEggs => '2 Eier';
 
   @override
   String get extractionKindSampleStatementEggs => 'Eier';
 
   @override
-  String get extractionKindSampleExcerptBread =>
-      'Brot auf die Einkaufsliste setzen.';
+  String get extractionKindSampleExcerptBread => '1 Tasse Zucker';
 
   @override
-  String get extractionKindSampleQuoteBread => 'Brot auf';
+  String get extractionKindSampleQuoteBread => '1 Tasse Zucker';
 
   @override
-  String get extractionKindSampleStatementBread => 'Brot';
+  String get extractionKindSampleStatementBread => 'Zucker';
 }

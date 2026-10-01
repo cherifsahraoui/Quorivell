@@ -709,7 +709,7 @@
   "extractionKindsBannerDismiss": "Verstanden",
   "extractionKindTemplateSection": "Mit Vorlage starten",
   "extractionKindTemplateGroceries": "Einkauf",
-  "extractionKindTemplateGroceriesHint": "Einkaufsartikel als kurze Namen (Milch, Zucker). Ein Kandidat pro Artikel. Listen aufteilen. Keine Rezepte oder Meinungen.",
+  "extractionKindTemplateGroceriesHint": "Einkaufsartikel als kurze Namen (Milch, Mehl, Zucker). Ein Kandidat pro Artikel. Listen und Rezept-Zutatenzeilen aufteilen (1 Tasse Milch → Milch). Keine Kochschritte, Tipps oder Meinungen.",
   "extractionKindTemplateFollowUp": "Nachfassen",
   "extractionKindTemplateFollowUpHint": "Ein späterer Check-in oder eine offene Frage, bei der jemand handeln muss.",
   "extractionKindExamplesTitle": "Lehrbeispiele",
@@ -736,6 +736,8 @@
   "captureUrlHelp": "Link einfügen oder Seiten-URL teilen, dann den Haupttext für die Extraktion laden.",
   "captureUrlInvalid": "Gib einen gültigen http- oder https-Link ein.",
   "captureUrlFetchFailed": "Seite konnte nicht geladen werden. Füge den Text stattdessen ein.",
+  "sourceConversationWebsiteLabel": "Von Website",
+  "sourceConversationOpenWebsite": "Seite öffnen",
   "conversationUnarchiveTitle": "Zu Aktiv wiederherstellen?",
   "conversationUnarchiveBody": "Das Gespräch wird zurück nach Aktiv verschoben, damit du erneut daraus extrahieren kannst.",
   "conversationUnarchiveConfirm": "Wiederherstellen",
@@ -808,7 +810,7 @@
       }
     }
   },
-  "extractionCustomKindsOnePerItemGuidance": "EIN KANDIDAT PRO EINTRAG: Wenn eine Zeile mehrere Treffer auflistet (Milch, Eier und Brot; Alice und Bob), gib für jeden Eintrag einen eigenen Kandidaten aus. statement muss der kurze Artikelname allein sein (Milch, Eier, Brot, Emila) — kein Satz und nicht Milch kaufen. quoteSnippet sind Beweiswörter aus dem Gespräch (noch Milch) und muss sich von statement unterscheiden. Fasse eine ganze Liste nie in einem Kandidaten zusammen.",
+  "extractionCustomKindsOnePerItemGuidance": "EIN KANDIDAT PRO EINTRAG: Wenn eine Zeile mehrere Treffer auflistet (Milch, Eier und Brot; Alice und Bob) oder eine gemessene Rezept-/Zutatenzeile einen Artikel nennt (1,5 Tassen Mehl; 3 EL Butter, geschmolzen; 1 Ei), gib für jeden Treffer einen eigenen Kandidaten aus. statement muss der kurze Artikelname allein sein (Mehl, Backpulver, Milch, Butter, Eier, Emila) — nicht die volle Mengenzeile und nicht Milch kaufen. quoteSnippet sind Beweiswörter aus dem Gespräch und muss sich von statement unterscheiden. Fasse eine ganze Liste nie in einem Kandidaten zusammen. Überspringe Zutatenlisten nicht nur deshalb, weil sie in einem Rezept stehen.",
   "@extractionCustomKindsOnePerItemGuidance": {
     "description": "List-splitting guidance for custom kinds on small on-device models."
   },
@@ -845,12 +847,12 @@
   "extractionKindSampleExcerptMilk": "Wir brauchen diese Woche noch Milch.",
   "extractionKindSampleQuoteMilk": "noch Milch",
   "extractionKindSampleStatementMilk": "Milch",
-  "extractionKindSampleExcerptEggs": "Wir brauchen diese Woche noch Eier.",
-  "extractionKindSampleQuoteEggs": "noch Eier",
+  "extractionKindSampleExcerptEggs": "2 Eier in den Teig geben.",
+  "extractionKindSampleQuoteEggs": "2 Eier",
   "extractionKindSampleStatementEggs": "Eier",
-  "extractionKindSampleExcerptBread": "Brot auf die Einkaufsliste setzen.",
-  "extractionKindSampleQuoteBread": "Brot auf",
-  "extractionKindSampleStatementBread": "Brot",
+  "extractionKindSampleExcerptBread": "1 Tasse Zucker",
+  "extractionKindSampleQuoteBread": "1 Tasse Zucker",
+  "extractionKindSampleStatementBread": "Zucker",
   "@extractionKindSampleExcerptMilk": {
     "description": "Sample teaching-example field for groceries starter (extractionKindSampleExcerptMilk)."
   },

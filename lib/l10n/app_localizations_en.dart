@@ -2343,7 +2343,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get extractionKindTemplateGroceriesHint =>
-      'Shopping items as short names (Milk, Sugar). One candidate per item. Split lists. Skip recipes and opinions.';
+      'Shopping items as short names (Milk, Flour, Sugar). One candidate per item. Split lists and recipe ingredient lines (1 cup milk → Milk). Skip cooking steps, tips, and opinions.';
 
   @override
   String get extractionKindTemplateFollowUp => 'Follow-up';
@@ -2437,6 +2437,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get captureUrlFetchFailed =>
       'Could not fetch that page. Paste the text instead.';
+
+  @override
+  String get sourceConversationWebsiteLabel => 'From website';
+
+  @override
+  String get sourceConversationOpenWebsite => 'Open page';
 
   @override
   String get conversationUnarchiveTitle => 'Restore to Active?';
@@ -2548,7 +2554,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get extractionCustomKindsOnePerItemGuidance =>
-      'ONE CANDIDATE PER ITEM: when a line lists several matches (milk, eggs, and bread; Alice and Bob), emit a separate candidate for each item. statement must be the short item name alone (Milk, Eggs, Bread, Emila) — not a sentence and not Buy milk. quoteSnippet is evidence words from the conversation (need milk) and must differ from statement. Never merge a whole list into one candidate.';
+      'ONE CANDIDATE PER ITEM: when a line lists several matches (milk, eggs, and bread; Alice and Bob), or a measured recipe/ingredient line names an item (1.5 cups all-purpose flour; 3 tablespoons butter, melted; 1 egg), emit a separate candidate for each match. statement must be the short item name alone (Flour, Baking powder, Milk, Butter, Eggs, Emila) — not the full measured line and not Buy milk. quoteSnippet is evidence words from the conversation and must differ from statement. Never merge a whole list into one candidate. Do not skip ingredient lists just because they appear in a recipe.';
 
   @override
   String get extractionPromptDueDateClause =>
@@ -2576,22 +2582,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get extractionKindSampleStatementMilk => 'Milk';
 
   @override
-  String get extractionKindSampleExcerptEggs =>
-      'We still need eggs for the week.';
+  String get extractionKindSampleExcerptEggs => 'Add 2 eggs to the batter.';
 
   @override
-  String get extractionKindSampleQuoteEggs => 'need eggs';
+  String get extractionKindSampleQuoteEggs => '2 eggs';
 
   @override
   String get extractionKindSampleStatementEggs => 'Eggs';
 
   @override
-  String get extractionKindSampleExcerptBread =>
-      'Add bread to the shopping list.';
+  String get extractionKindSampleExcerptBread => '1 cup sugar';
 
   @override
-  String get extractionKindSampleQuoteBread => 'Add bread';
+  String get extractionKindSampleQuoteBread => '1 cup sugar';
 
   @override
-  String get extractionKindSampleStatementBread => 'Bread';
+  String get extractionKindSampleStatementBread => 'Sugar';
 }

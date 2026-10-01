@@ -436,7 +436,9 @@ class _ConversationHistoryTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: Icon(
-                  conversation.isArchived
+                  conversation.sourceUrl != null
+                      ? Icons.language
+                      : conversation.isArchived
                       ? Icons.inventory_2_outlined
                       : Icons.chat_bubble_outline,
                   size: 20,
@@ -448,6 +450,15 @@ class _ConversationHistoryTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (conversation.sourceUrl != null) ...[
+                      Text(
+                        l10n.sourceConversationWebsiteLabel,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                    ],
                     Text(
                       conversation.content,
                       maxLines: 2,

@@ -52,8 +52,10 @@ class _FakeSourceConversationRepository
   }
 
   @override
-  Future<SourceConversation> capture(String content) async =>
-      throw UnimplementedError();
+  Future<SourceConversation> capture(
+    String content, {
+    String? sourceUrl,
+  }) async => throw UnimplementedError();
 
   @override
   Future<SourceConversation?> latest() async => null;
@@ -156,6 +158,16 @@ void main() {
     isArchived: true,
   );
 
+  final website = SourceConversation(
+    id: 'source-web',
+    userId: 'user-id',
+    content: 'Fetched page about the roadmap.',
+    sourceUrl: 'https://example.com/article',
+    sourceRevision: 1,
+    createdAt: DateTime.utc(2026, 10, 1),
+    updatedAt: DateTime.utc(2026, 10, 1),
+  );
+
   testWidgets('shows a loading state before history emits', (tester) async {
     await _pump(
       tester,
@@ -219,6 +231,18 @@ void main() {
     expect(find.text('Already extracted conversation.'), findsNothing);
     expect(repository.lastLimit, isNotNull);
     expect(repository.lastArchivedOnly, isFalse);
+  });
+
+  testWidgets('marks webpage captures in active history', (tester) async {
+    await _pump(
+      tester,
+      _FakeSourceConversationRepository([website]),
+      const ConversationHistoryPage(),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('From website'), findsOneWidget);
+    expect(find.text('Fetched page about the roadmap.'), findsOneWidget);
   });
 
   testWidgets('select mode bulk-deletes conversations after confirm', (

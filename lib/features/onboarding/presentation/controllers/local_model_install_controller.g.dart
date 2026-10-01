@@ -39,7 +39,7 @@ final class LocalModelInstallControllerProvider
 }
 
 String _$localModelInstallControllerHash() =>
-    r'14877954510e5e4acf8e2174dd0111b9a1538b87';
+    r'237e7a0908b93b359623d2301fa2d4a9cb0d81a2';
 
 abstract class _$LocalModelInstallController
     extends $AsyncNotifier<LocalModelInstallSnapshot> {

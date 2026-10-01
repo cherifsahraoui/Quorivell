@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/database/app_database.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/layout/shell_bottom_inset.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -12,9 +13,11 @@ import '../../../../core/widgets/show_app_snack_bar.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../extraction_kinds/data/providers/extraction_item_kind_providers.dart';
 import '../../../extraction_kinds/presentation/extraction_kind_labels.dart';
+import '../../data/providers/extraction_providers.dart';
 import '../../domain/entities/extraction_run.dart';
 import '../../domain/entities/review_candidate.dart';
 import '../controllers/review_controller.dart';
+import '../utils/extraction_run_results.dart';
 import '../widgets/accept_rejected_review_dialog.dart';
 import '../widgets/confirm_delete_extraction_run_dialog.dart';
 import '../widgets/confirm_delete_rejected_review_dialog.dart';
@@ -479,7 +482,7 @@ class _ExtractionHistoryTab extends ConsumerWidget {
   }
 }
 
-class _ExtractionRunTile extends StatelessWidget {
+class _ExtractionRunTile extends ConsumerWidget {
   const _ExtractionRunTile({
     required this.run,
     required this.onTap,
@@ -497,13 +500,86 @@ class _ExtractionRunTile extends StatelessWidget {
   final VoidCallback? onSelectionToggle;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Keep listening so accept / reject / delete on other tabs refresh counts.
+    ref.watch(pendingReviewCountProvider);
+    ref.watch(rejectedReviewQueueControllerProvider);
+
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
 
     final dateFormat = DateFormat.yMd(l10n.localeName).add_jm();
     final durationSeconds = (run.durationMs / 1000.0).toStringAsFixed(1);
+    final sourceId = run.sourceConversationId;
+
+    Widget resultsSection({
+      required int accepted,
+      required int rejected,
+      required int pending,
+      required Map<String, int> kindCounts,
+    }) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            [
+              l10n.extractionHistoryAcceptedCount(accepted),
+              l10n.extractionHistoryRejectedCount(rejected),
+              l10n.extractionHistoryPendingCount(pending),
+            ].join(' · '),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+          if (kindCounts.values.any((count) => count > 0)) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
+              children: [
+                for (final entry in kindCounts.entries)
+                  if (entry.value > 0)
+                    Chip(
+                      label: Text(
+                        l10n.extractionHistoryKindCount(
+                          extractionKindDisplayName(l10n, entry.key),
+                          entry.value,
+                        ),
+                      ),
+                      visualDensity: VisualDensity.compact,
+                    ),
+              ],
+            ),
+          ],
+        ],
+      );
+    }
+
+    final liveResults = sourceId == null
+        ? resultsSection(
+            accepted: run.acceptedCount,
+            rejected: run.rejectedCount,
+            pending: run.pendingCount,
+            kindCounts: run.kindCounts,
+          )
+        : StreamBuilder<List<ExtractionCandidateRow>>(
+            stream: ref
+                .read(extractionLocalDataSourceProvider)
+                .watchCandidatesForSource(sourceId),
+            builder: (context, snapshot) {
+              final counts = recountExtractionRunResults(
+                run: run,
+                rows: snapshot.data,
+              );
+              return resultsSection(
+                accepted: counts.accepted,
+                rejected: counts.rejected,
+                pending: counts.pending,
+                kindCounts: counts.kindCounts,
+              );
+            },
+          );
 
     final card = Card(
       child: InkWell(
@@ -585,36 +661,7 @@ class _ExtractionRunTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.xs),
-              Text(
-                [
-                  l10n.extractionHistoryAcceptedCount(run.acceptedCount),
-                  l10n.extractionHistoryRejectedCount(run.rejectedCount),
-                  l10n.extractionHistoryPendingCount(run.pendingCount),
-                ].join(' · '),
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              if (run.kindCounts.values.any((count) => count > 0)) ...[
-                const SizedBox(height: AppSpacing.sm),
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.xs,
-                  children: [
-                    for (final entry in run.kindCounts.entries)
-                      if (entry.value > 0)
-                        Chip(
-                          label: Text(
-                            l10n.extractionHistoryKindCount(
-                              extractionKindDisplayName(l10n, entry.key),
-                              entry.value,
-                            ),
-                          ),
-                          visualDensity: VisualDensity.compact,
-                        ),
-                  ],
-                ),
-              ],
+              liveResults,
             ],
           ),
         ),

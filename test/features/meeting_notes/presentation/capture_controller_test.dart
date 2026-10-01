@@ -14,12 +14,16 @@ class _FakeSourceConversationRepository
   final Object? failure;
 
   @override
-  Future<SourceConversation> capture(String content) async {
+  Future<SourceConversation> capture(
+    String content, {
+    String? sourceUrl,
+  }) async {
     if (failure != null) throw failure!;
     return SourceConversation(
       id: 'source-id',
       userId: 'user-id',
       content: content.trim(),
+      sourceUrl: sourceUrl,
       sourceRevision: 1,
       createdAt: DateTime.utc(2026, 9, 7),
       updatedAt: DateTime.utc(2026, 9, 7),

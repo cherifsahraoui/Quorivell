@@ -34,4 +34,16 @@ void main() {
   test('copyWith can mark a conversation archived', () {
     expect(_conversation().copyWith(isArchived: true).isArchived, isTrue);
   });
+
+  test('copyWith can attach a webpage sourceUrl', () {
+    final withUrl = _conversation().copyWith(
+      sourceUrl: 'https://example.com/article',
+    );
+
+    expect(withUrl.sourceUrl, 'https://example.com/article');
+    expect(
+      SourceConversation.fromJson(withUrl.toJson()).sourceUrl,
+      'https://example.com/article',
+    );
+  });
 }

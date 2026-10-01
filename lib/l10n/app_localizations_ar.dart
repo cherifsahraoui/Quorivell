@@ -2372,7 +2372,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get extractionKindTemplateGroceriesHint =>
-      'عناصر تسوق بأسماء قصيرة (حليب، سكر). مرشّح واحد لكل عنصر. قسّم القوائم. لا وصفات ولا آراء.‏';
+      'عناصر تسوق بأسماء قصيرة (حليب، دقيق، سكر). مرشّح واحد لكل عنصر. قسّم القوائم وأسطر مكوّنات الوصفات (كوب حليب → حليب). تجاهل خطوات الطبخ والنصائح والآراء.‏';
 
   @override
   String get extractionKindTemplateFollowUp => 'متابعة';
@@ -2466,6 +2466,12 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get captureUrlFetchFailed =>
       'تعذّر جلب تلك الصفحة. الصق النص بدلاً من ذلك.‏';
+
+  @override
+  String get sourceConversationWebsiteLabel => 'من موقع ويب';
+
+  @override
+  String get sourceConversationOpenWebsite => 'فتح الصفحة';
 
   @override
   String get conversationUnarchiveTitle => 'استعادة إلى النشطة؟‏';
@@ -2577,7 +2583,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get extractionCustomKindsOnePerItemGuidance =>
-      'مرشّح واحد لكل عنصر: عندما يذكر السطر عدة مطابقات (حليب وبيض وخبز؛ Alice وBob) أخرج مرشّحاً منفصلاً لكل عنصر. يجب أن يكون statement اسم العنصر القصير وحده (حليب، بيض، خبز، Emila) — وليس جملة ولا اشترِ حليباً. quoteSnippet كلمات دليل من المحادثة (نحتاج حليباً) ويجب أن يختلف عن statement. لا تدمج قائمة كاملة في مرشّح واحد.‏';
+      'مرشّح واحد لكل عنصر: عندما يذكر السطر عدة مطابقات (حليب وبيض وخبز؛ Alice وBob) أو يذكر سطر مكوّن مُقاس عنصراً (1.5 كوب دقيق متعدد الأغراض؛ 3 ملاعق كبيرة زبدة مذابة؛ بيضة واحدة) أخرج مرشّحاً منفصلاً لكل مطابقة. يجب أن يكون statement اسم العنصر القصير وحده (دقيق، بيكنغ باودر، حليب، زبدة، بيض، Emila) — وليس السطر المقاس كاملاً ولا اشترِ حليباً. quoteSnippet كلمات دليل من المحادثة ويجب أن يختلف عن statement. لا تدمج قائمة كاملة في مرشّح واحد. لا تتخطَّ قوائم المكوّنات فقط لأنها في وصفة.‏';
 
   @override
   String get extractionPromptDueDateClause =>
@@ -2604,21 +2610,20 @@ class AppLocalizationsAr extends AppLocalizations {
   String get extractionKindSampleStatementMilk => 'حليب';
 
   @override
-  String get extractionKindSampleExcerptEggs =>
-      'ما زلنا نحتاج بيضاً لهذا الأسبوع.';
+  String get extractionKindSampleExcerptEggs => 'أضف بيضتين إلى العجينة.';
 
   @override
-  String get extractionKindSampleQuoteEggs => 'نحتاج بيضاً';
+  String get extractionKindSampleQuoteEggs => 'بيضتين';
 
   @override
   String get extractionKindSampleStatementEggs => 'بيض';
 
   @override
-  String get extractionKindSampleExcerptBread => 'أضف خبزاً إلى قائمة التسوق.';
+  String get extractionKindSampleExcerptBread => 'كوب سكر';
 
   @override
-  String get extractionKindSampleQuoteBread => 'أضف خبزاً';
+  String get extractionKindSampleQuoteBread => 'كوب سكر';
 
   @override
-  String get extractionKindSampleStatementBread => 'خبز';
+  String get extractionKindSampleStatementBread => 'سكر';
 }
