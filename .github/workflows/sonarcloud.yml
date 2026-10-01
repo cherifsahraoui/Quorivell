@@ -40,6 +40,25 @@ jobs:
           dart run build_runner build --delete-conflicting-outputs
           flutter gen-l10n
 
+      # Public repo omits real FlutterFire output (.publicignore). Stub so
+      # firebase_bootstrap / main imports compile for unit tests + coverage.
+      - name: Stub Firebase options for public CI
+        run: |
+          cat > lib/firebase_options.dart <<'EOF'
+          // Generated for public CI only — not a real Firebase project.
+          // ignore_for_file: type=lint
+          import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
+
+          class DefaultFirebaseOptions {
+            static FirebaseOptions get currentPlatform {
+              throw UnsupportedError(
+                'DefaultFirebaseOptions are not configured in the public clone. '
+                'Run flutterfire configure against your own project.',
+              );
+            }
+          }
+          EOF
+
       - name: Unit tests with coverage
         run: flutter test --coverage
 

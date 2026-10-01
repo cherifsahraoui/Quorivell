@@ -19,10 +19,15 @@ void main() {
     expect(version, matches(RegExp(r'^\d+\.\d+\.\d+(\+\d+)?$')));
 
     final versionName = version!.split('+').first;
-    final notes = File(
+    final notesFile = File(
       '${repoRoot.path}/docs/google-play/release-notes.md',
-    ).readAsStringSync();
-    expect(notes, contains('`$versionName`'));
+    );
+    // Public clone omits docs/google-play/ (.publicignore); private CI still checks.
+    if (!notesFile.existsSync()) {
+      markTestSkipped('docs/google-play/release-notes.md is private-only');
+      return;
+    }
+    expect(notesFile.readAsStringSync(), contains('`$versionName`'));
   });
 
   test('AndroidManifest disables Auto Backup of local records', () {

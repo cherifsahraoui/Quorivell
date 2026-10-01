@@ -28,8 +28,8 @@ void main() {
     expect(second.createdAt, first.createdAt);
   });
 
-  test('uses schema version 11 for extraction kinds', () {
-    expect(database.schemaVersion, 11);
+  test('uses schema version 12 for extraction kinds', () {
+    expect(database.schemaVersion, 12);
   });
 
   test('seeds built-in decision and commitment kinds', () async {
