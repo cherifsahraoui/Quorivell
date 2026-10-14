@@ -41,7 +41,7 @@ dependencies:
   auto_size_text: ^3.0.0
   file_picker: ^13.1.0
   flutter_svg: ^2.2.0
-  url_launcher: ^6.3.2
+  url_launcher: ^6.3.3
   package_info_plus: ^10.2.1
 
 dev_dependencies:
